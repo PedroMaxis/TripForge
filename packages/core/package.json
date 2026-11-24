@@ -1,0 +1,16 @@
+{
+  "name": "@tripforge/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "jose": "^6.2.18",
+    "zod": "^4.6.7"
+  }
+}

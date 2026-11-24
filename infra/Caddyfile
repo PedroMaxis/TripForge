@@ -1,0 +1,17 @@
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	handle /socket.io/* {
+		reverse_proxy realtime:3001
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

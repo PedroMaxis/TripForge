@@ -1,0 +1,67 @@
+name: tripforge
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tripforge
+      POSTGRES_DB: tripforge
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U tripforge -d tripforge
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  migrate:
+    image: ghcr.io/pedromaxis/tripforge-server:${TAG:-latest}
+    command: node migrate.mjs
+    environment:
+      DATABASE_URL: &database-url postgres://tripforge:${POSTGRES_PASSWORD:?}@db:5432/tripforge
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/pedromaxis/tripforge-web:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      APP_URL: ${APP_URL:?}
+      DATABASE_URL: *database-url
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+      REALTIME_SECRET: ${REALTIME_SECRET:?}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  realtime:
+    image: ghcr.io/pedromaxis/tripforge-server:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      APP_URL: ${APP_URL:?}
+      REALTIME_SECRET: ${REALTIME_SECRET:?}
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+      - realtime
+
+volumes:
+  db:
+  caddy-data:
+  caddy-config:

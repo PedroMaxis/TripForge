@@ -1,0 +1,29 @@
+{
+  "name": "tripforge",
+  "version": "0.0.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter \"./apps/*\" dev",
+    "build": "pnpm -r build",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:e2e": "pnpm --filter @tripforge/web test:e2e",
+    "db:dev": "pnpm --filter @tripforge/db dev:postgres",
+    "db:generate": "pnpm --filter @tripforge/db generate",
+    "db:migrate": "pnpm --filter @tripforge/db migrate"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "@types/node": "^24.19.2",
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.1"
+  }
+}

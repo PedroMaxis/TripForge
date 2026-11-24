@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm --filter @tripforge/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright
+          path: apps/web/test-results
+
+  # Builds the ARM images and boots the real Compose stack behind Caddy.
+  stack:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build images
+        run: |
+          for target in web server; do
+            docker build -f infra/Dockerfile --target "$target" -t "ghcr.io/pedromaxis/tripforge-$target:$GITHUB_SHA" .
+          done
+      - name: Boot the stack
+        working-directory: infra
+        env:
+          TAG: ${{ github.sha }}
+          SITE_ADDRESS: ":80"
+          APP_URL: http://localhost
+          POSTGRES_PASSWORD: ci
+          BETTER_AUTH_SECRET: ci-only-better-auth-secret-0123456789
+          REALTIME_SECRET: ci-only-realtime-secret-0123456789abc
+        run: |
+          docker compose up -d --no-build
+          if ! curl -fsS --retry 30 --retry-delay 2 --retry-all-errors http://localhost/api/health ||
+             ! curl -fsS 'http://localhost/socket.io/?EIO=4&transport=polling'; then
+            docker compose logs
+            exit 1
+          fi
+      - name: Publish images
+        if: github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          for target in web server; do
+            docker push "ghcr.io/pedromaxis/tripforge-$target:$GITHUB_SHA"
+          done
+
+  deploy:
+    needs: [checks, stack]
+    if: github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    concurrency: deploy
+    env:
+      TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          install -m 600 /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+      - name: Update the server
+        run: |
+          scp infra/compose.yml infra/Caddyfile "$TARGET:/opt/tripforge/"
+          ssh "$TARGET" "cd /opt/tripforge && export TAG=$GITHUB_SHA && docker compose pull && docker compose up -d --remove-orphans web realtime caddy && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile && for i in 1 2 3 4 5 6 7 8 9 10; do docker compose exec -T caddy wget -qO- http://web:3000/api/health && exit 0; sleep 3; done; exit 1"

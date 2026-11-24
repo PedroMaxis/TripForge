@@ -1,0 +1,43 @@
+{
+  "Meta": {
+    "description": "Planeje viagens em grupo, dia a dia e em tempo real."
+  },
+  "Landing": {
+    "title": "Planeje a viagem em grupo",
+    "body": "Monte o roteiro dia a dia com seus amigos e veja cada mudança na hora."
+  },
+  "Trips": {
+    "title": "Minhas viagens",
+    "emptyTitle": "Nenhuma viagem ainda",
+    "emptyBody": "Suas viagens vão aparecer aqui.",
+    "signOut": "Sair"
+  },
+  "LocaleSwitcher": {
+    "label": "Idioma"
+  },
+  "NotFound": {
+    "title": "Página não encontrada",
+    "back": "Voltar ao início"
+  },
+  "SignUp": {
+    "title": "Crie sua conta"
+  },
+  "Account": {
+    "name": "Nome",
+    "email": "E-mail",
+    "password": "Senha",
+    "passwordHint": "Pelo menos 8 caracteres.",
+    "signIn": "Entrar",
+    "createAccount": "Criar conta",
+    "goToSignUp": "Criar uma conta",
+    "goToSignIn": "Já tenho conta",
+    "errors": {
+      "wrongCredentials": "E-mail ou senha incorretos.",
+      "emailTaken": "Já existe uma conta com este e-mail.",
+      "invalidEmail": "Este e-mail não parece válido.",
+      "passwordLength": "Use uma senha de 8 a 128 caracteres.",
+      "tooManyAttempts": "Muitas tentativas. Espere um minuto e tente de novo.",
+      "unexpected": "Algo deu errado. Tente de novo."
+    }
+  }
+}
