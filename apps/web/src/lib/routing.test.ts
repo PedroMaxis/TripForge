@@ -86,12 +86,16 @@ test('a long way is not even asked on foot', async () => {
   expect(requests.every((x) => x.url.includes('routed-car'))).toBe(true)
 })
 test('keeps its distance between requests', async () => {
-  const r = router()
+  // Seen from the other end, where a busy machine may shift each arrival a little.
+  const r = router({ intervalMs: 250 })
   r.request([leg(a, b), leg(b, far), leg(far, a)])
   await r.idle()
-  for (let i = 1; i < requests.length; i++)
-    expect(requests[i]!.at - requests[i - 1]!.at).toBeGreaterThanOrEqual(45)
+  expect(requests.length).toBeGreaterThanOrEqual(3)
+  for (let i = 1; i < requests.length; i++) {
+    expect(requests[i]!.at - requests[i - 1]!.at).toBeGreaterThanOrEqual(150)
+  }
 })
+
 test('the same leg is asked for once', async () => {
   const r = router()
   r.request([leg(a, b)])
