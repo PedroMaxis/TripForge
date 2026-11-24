@@ -53,6 +53,8 @@ async function drag(page: Page, title: string, to: { x: number; y: number }) {
   await page.mouse.move(to.x, to.y, { steps: 20 })
   await page.waitForTimeout(150)
   await page.mouse.up()
+  // dnd-kit ignores clicks for a moment after a drop, so a drop never clicks what is under it.
+  await page.waitForTimeout(100)
 }
 const center = (b: { x: number; y: number; width: number; height: number }) => ({
   x: b.x + b.width / 2,
@@ -105,7 +107,7 @@ test('adds stops and edits one; everything is still there after a reload', async
   await page.getByLabel('Notes').blur()
   await saved(page)
   await page.reload()
-  expect(await names(page)).toEqual(['Igrejinha', 'Mineirão'])
+  await expect.poll(() => names(page)).toEqual(['Igrejinha', 'Mineirão'])
   await expect(stop(page, 'Igrejinha')).toContainText('09:30 to 10:15')
   await stop(page, 'Igrejinha')
     .getByRole('button', { name: /^Igrejinha/ })
@@ -121,7 +123,7 @@ test('reorders by dragging', async ({ page }) => {
   await expect.poll(() => names(page)).toEqual(['Two', 'Three', 'One'])
   await saved(page)
   await page.reload()
-  expect(await names(page)).toEqual(['Two', 'Three', 'One'])
+  await expect.poll(() => names(page)).toEqual(['Two', 'Three', 'One'])
 })
 
 test('reorders with the keyboard alone', async ({ page }) => {
@@ -144,7 +146,7 @@ test('drags a stop to another day, and can undo it', async ({ page }) => {
   await drag(page, 'Inhotim', center((await leg(page, 'Fri').boundingBox())!))
   await expect.poll(() => names(page)).toEqual([])
   await leg(page, 'Fri').click()
-  expect(await names(page)).toEqual(['Inhotim'])
+  await expect.poll(() => names(page)).toEqual(['Inhotim'])
   await page.getByRole('button', { name: 'Undo' }).click()
   await expect.poll(() => names(page)).toEqual([])
   await leg(page, 'Thu').click()
@@ -161,7 +163,7 @@ test('keeps an idea and gives it a day later', async ({ page }) => {
   await page.getByLabel('Move to').selectOption({ label: 'Saturday, March 6' })
   await expect.poll(() => names(page)).toEqual([])
   await leg(page, 'Sat').click()
-  expect(await names(page)).toEqual(['CCBB'])
+  await expect.poll(() => names(page)).toEqual(['CCBB'])
 })
 
 test('deletes a stop and brings it back', async ({ page }) => {
@@ -176,7 +178,7 @@ test('deletes a stop and brings it back', async ({ page }) => {
   await expect.poll(() => names(page)).toEqual(['Museu'])
   await saved(page)
   await page.reload()
-  expect(await names(page)).toEqual(['Museu'])
+  await expect.poll(() => names(page)).toEqual(['Museu'])
 })
 
 test('names a day', async ({ page }) => {
@@ -301,5 +303,5 @@ test('a change made while the connection drops is sent when it returns', async (
   await page.unroute('**/operations')
   await saved(page)
   await page.reload()
-  expect(await names(page)).toEqual(['Museu', 'Parque'])
+  await expect.poll(() => names(page)).toEqual(['Museu', 'Parque'])
 })
