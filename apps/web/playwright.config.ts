@@ -24,6 +24,11 @@ export default defineConfig({
       gracefulShutdown: { signal: 'SIGTERM', timeout: 5000 },
     },
     {
+      command: 'pnpm --filter @tripforge/realtime build && pnpm --filter @tripforge/realtime start',
+      url: `${env.REALTIME_URL}/health`,
+      env,
+    },
+    {
       command: 'pnpm --filter @tripforge/db migrate && pnpm build && pnpm start',
       url: `${env.APP_URL}/api/health`,
       env: { ...env, PORT: '3100', NEXT_DIST_DIR: '.next-e2e' },

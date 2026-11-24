@@ -184,6 +184,9 @@ importers:
       '@tripforge/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@tripforge/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       socket.io:
         specifier: ^4.8.4
         version: 4.8.4
@@ -191,6 +194,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.6.0
+        version: 0.6.0
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -254,6 +260,9 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      socket.io-client:
+        specifier: ^4.8.4
+        version: 4.8.4
       zod:
         specifier: ^4.6.7
         version: 4.6.7

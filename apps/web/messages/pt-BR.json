@@ -128,6 +128,23 @@
     "late": {
       "overlap": "começa antes da anterior acabar",
       "travel": "não dá tempo de chegar"
+    },
+    "editing": "{name} está editando",
+    "deletedBy": "{name} excluiu {title}",
+    "overwritten": "{name} também mudou {title} agora",
+    "signedOut": "Sua sessão acabou. As mudanças estão guardadas neste aparelho.",
+    "signIn": "Entrar",
+    "revoked": "Você não tem mais acesso a esta viagem",
+    "revokedBody": "Quem criou a viagem te removeu, ou você saiu.",
+    "myTrips": "Minhas viagens",
+    "history": "Histórico",
+    "conflict": {
+      "label": "Conflito em {title}",
+      "body": "{name} mudou “{title}” enquanto você estava sem conexão. Qual versão fica?",
+      "mine": "A sua",
+      "empty": "vazio",
+      "useMine": "Usar a minha",
+      "keepTheirs": "Manter a de {name}"
     }
   },
   "Map": {
@@ -200,5 +217,29 @@
   "PasswordMail": {
     "subject": "Sua nova senha do TripForge",
     "body": "Alguém pediu uma nova senha do TripForge pra este e-mail. Pra escolher, abra este link em até uma hora:\n\n{link}\n\nSe não foi você, ignore esta mensagem."
+  },
+  "History": {
+    "title": "Histórico",
+    "empty": "Nada mudou ainda.",
+    "filter": "Dia",
+    "allDays": "Todos os dias",
+    "ideas": "Ideias",
+    "dayNumber": "Dia {number}",
+    "show": "Mostrar",
+    "entries": {
+      "item_create": "{name} adicionou {title}",
+      "item_update": "{name} editou {title}",
+      "item_move": "{name} moveu {title} para {day}",
+      "item_delete": "{name} excluiu {title}",
+      "item_restore": "{name} trouxe de volta {title}",
+      "day_update": "{name} editou {day}",
+      "trip_update": "{name} mudou os ajustes da viagem",
+      "archived": "{name} arquivou a viagem",
+      "unarchived": "{name} desarquivou a viagem",
+      "joined": "{name} entrou",
+      "left": "{name} saiu",
+      "removed": "{name} removeu {other}",
+      "role": "{name} mudou o papel de {other}"
+    }
   }
 }

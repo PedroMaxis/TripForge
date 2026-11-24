@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@tripforge/core": "workspace:*",
+    "@tripforge/db": "workspace:*",
     "socket.io": "^4.8.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.6.0",
     "esbuild": "^0.28.2",
     "socket.io-client": "^4.8.4",
     "tsx": "^4.23.15"

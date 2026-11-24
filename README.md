@@ -2,7 +2,7 @@
 
 A collaborative trip planner: a group builds the itinerary day by day, together and in real time, with every stop on a map.
 
-> **Status:** phase 2 of 4. Accounts, trips, the day-by-day itinerary, the map with street routes, place search and invites work. Live editing comes next.
+> **Status:** phase 3 of 4. Friends can plan a trip together, live: itinerary, map with street routes, invites, presence, conflicts, offline edits and history. Next comes the launch: installable app, polish and deploy.
 
 ## Stack
 
@@ -51,6 +51,22 @@ pnpm test:e2e
 ## How a trip changes
 
 Every change is a small operation (`item.move`, `item.update`, `day.update`...). The screen applies it at once and sends it; the server locks the trip, checks the role, applies it, gives it the next revision and logs it, all in one transaction. Each operation carries an id, so a retry is never applied twice. Order inside a day is a fractional index: moving a stop changes one row, and the server separates two stops dropped on the same spot.
+
+## How it stays live
+
+1. The browser applies a change at once, keeps it in a queue that survives a reload, and posts it.
+2. The server applies it in a transaction, gives it the next revision and calls `pg_notify`.
+3. The realtime server hears the notice, reads the new log entries and sends them, in order, to everyone with the trip open. Notices carry no data, so a lost one costs nothing.
+4. Each browser applies entries strictly by revision. A gap, a reconnection or a tab coming back is filled from `GET /api/trips/:id/log`.
+
+| When | What happens |
+| --- | --- |
+| Two people edit different fields | Both survive: only changed fields travel |
+| Two people edit the same field online | The last to arrive wins, and the other is told |
+| An offline edit meets a newer one | The newer stays; the author sees both and chooses |
+| Someone edits a deleted stop | The deletion wins, with an undo |
+| Two stops land on the same spot | The server moves one right after the other |
+| Someone is removed | Their screen closes at once, and their invite links die |
 
 ## Outside services
 

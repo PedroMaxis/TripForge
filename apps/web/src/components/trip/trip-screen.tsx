@@ -17,23 +17,26 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { lateFor, legKey, type Place, type Trip } from '@tripforge/core'
+import { lateFor, legKey, type Operation, type Place, type Trip } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
-import { createTripStore, itemsOf, positionAt } from '@/lib/trip-store'
+import { createTripApi } from '@/lib/trip-api'
+import { createTripStore, itemsOf, type Notice, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
 import type { Near } from '../place-search'
 import { AddItem } from './add-item'
 import { AutoField } from './auto-field'
+import { Conflicts } from './conflicts'
 import { Cover } from './cover'
 import { DayStrip, isLeg, legDay } from './day-strip'
 import { People } from './people'
 import { Stop } from './stop'
 import { type MapSources, TripMap } from './trip-map'
 import { useLegs } from './use-legs'
+import { useRealtime } from './use-realtime'
 
 // Over the strip only the pointer counts; inside the list, the nearest row.
 const collisions: CollisionDetection = (args) => {
@@ -56,16 +59,23 @@ const kilometers = (meters: number, locale: string) =>
 export function TripScreen({
   initial,
   initialDayId,
+  userId,
+  realtimeUrl,
   sources,
 }: {
   initial: Trip
   initialDayId: string | null
+  userId: string
+  realtimeUrl: string | undefined
   sources: MapSources
 }) {
   const t = useTranslations('Trip')
   const locale = useLocale()
-  const [store] = useState(() => createTripStore(initial))
-  const { trip, sync, rejected, undo, dispatch, dismiss } = useStore(store)
+  const [store] = useState(() =>
+    createTripStore(initial, userId, createTripApi(initial.id, userId)),
+  )
+  const { trip, sync, undo, notice, conflicts, revoked, start, watch, settle, dispatch, dismiss } =
+    useStore(store)
   const [dayId, setDayId] = useState(initialDayId)
   const [openId, setOpenId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -78,6 +88,18 @@ export function TripScreen({
   const day = trip.days.find((d) => d.id === dayId) ?? null
   const list = itemsOf(trip, dayId)
   const dragging = trip.items.find((i) => i.id === draggingId)
+
+  useEffect(() => start(), [start])
+  useEffect(() => watch(openId), [watch, openId])
+  const present = useRealtime({
+    tripId: trip.id,
+    url: realtimeUrl,
+    store,
+    editing: canEdit ? openId : null,
+  })
+  const online = new Set(present.map((p) => p.userId))
+  const editorOf = (itemId: string) =>
+    present.find((p) => p.editing === itemId && p.userId !== userId)?.name ?? null
 
   const legs = useLegs(trip, sync === 'saved')
   const { destinationLat, destinationLng } = trip
@@ -116,13 +138,14 @@ export function TripScreen({
   })
 
   useEffect(() => {
-    if (!undo && !rejected) return
+    if (!undo && !notice) return
     const timer = setTimeout(dismiss, 7000)
     return () => clearTimeout(timer)
-  }, [undo, rejected, dismiss])
+  }, [undo, notice, dismiss])
 
   useEffect(() => {
-    if (sync === 'saved') return
+    // Without connection the changes are kept on the device, so leaving is safe.
+    if (sync !== 'saving') return
     const warn = (event: BeforeUnloadEvent) => event.preventDefault()
     addEventListener('beforeunload', warn)
     return () => removeEventListener('beforeunload', warn)
@@ -170,6 +193,37 @@ export function TripScreen({
     if (index >= 0 && over.id !== active.id) move(itemId, dayId, index)
   }
 
+  const undoOp: Operation | null = undo
+    ? undo.op
+    : notice?.kind === 'deletedByOther' && canEdit
+      ? { type: 'item.restore', itemId: notice.itemId }
+      : null
+
+  function noticeText(current: Notice) {
+    switch (current.kind) {
+      case 'rejected':
+        return t('rejected')
+      case 'deletedByOther':
+        return current.userName
+          ? t('deletedBy', { title: current.title, name: current.userName })
+          : t('deleted', { title: current.title })
+      case 'overwritten':
+        return t('overwritten', { title: current.title, name: current.userName })
+    }
+  }
+
+  if (revoked) {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-16">
+        <h1 className="text-4xl">{t('revoked')}</h1>
+        <p className="mt-4 mb-8 text-ink-2">{t('revokedBody')}</p>
+        <Link href="/trips" className="btn">
+          {t('myTrips')}
+        </Link>
+      </main>
+    )
+  }
+
   const dayName = (index: number) =>
     trip.days[index]?.title ?? t('dayNumber', { number: index + 1 })
 
@@ -199,12 +253,20 @@ export function TripScreen({
             data-state={sync}
             role="status"
             className={
-              sync === 'offline'
+              sync === 'offline' || sync === 'signedOut'
                 ? 'min-w-0 rounded-full bg-warm px-3 py-1 text-sm'
                 : 'text-sm text-muted max-sm:sr-only'
             }
           >
             {canEdit ? t(sync) : null}
+            {sync === 'signedOut' && (
+              <>
+                {' '}
+                <Link href="/" className="font-bold underline underline-offset-4">
+                  {t('signIn')}
+                </Link>
+              </>
+            )}
           </span>
           <div className="ml-auto flex items-center gap-3">
             {!canEdit && (
@@ -213,7 +275,7 @@ export function TripScreen({
               </span>
             )}
             <span className="max-sm:hidden">
-              <People members={trip.members} />
+              <People members={trip.members} online={online} />
             </span>
             <Link
               href={`/trips/${trip.id}/people`}
@@ -261,7 +323,11 @@ export function TripScreen({
               <p className="mt-2 text-sm text-ink-2">
                 {trip.destination}, {formatRange(trip.startDate, trip.endDate, locale)}
               </p>
+              <div className="mt-3 sm:hidden">
+                <People members={trip.members} online={online} />
+              </div>
             </Cover>
+            <Conflicts trip={trip} conflicts={conflicts} onSettle={settle} />
 
             <div className="flex flex-wrap items-end gap-x-4 gap-y-3 px-4 pt-6 pb-3">
               <div className="min-w-0 flex-1 basis-48">
@@ -337,6 +403,7 @@ export function TripScreen({
                       key={item.id}
                       item={item}
                       number={day ? index + 1 : null}
+                      editor={editorOf(item.id)}
                       travel={arrivals[index]?.travel ?? null}
                       late={arrivals[index]?.late ?? null}
                       near={near}
@@ -369,6 +436,14 @@ export function TripScreen({
                 </ol>
               </SortableContext>
             )}
+            <p className="px-4 pt-8">
+              <Link
+                href={`/trips/${trip.id}/history`}
+                className="text-sm text-accent underline underline-offset-4"
+              >
+                {t('history')}
+              </Link>
+            </p>
           </div>
         </main>
       </div>
@@ -385,15 +460,15 @@ export function TripScreen({
         role="status"
         className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:bottom-36"
       >
-        {(undo || rejected) && (
-          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-full bg-ink py-1 pr-1 pl-5 text-sm text-paper">
-            <span className="min-w-0 truncate pr-3">
-              {undo ? t(undo.kind, { title: undo.title }) : t('rejected')}
+        {(undo || notice) && (
+          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-3xl bg-ink py-1 pr-1 pl-5 text-sm text-paper">
+            <span className="min-w-0 py-2 pr-3 [overflow-wrap:anywhere]">
+              {undo ? t(undo.kind, { title: undo.title }) : notice && noticeText(notice)}
             </span>
-            {undo && (
+            {undoOp && (
               <button
                 type="button"
-                onClick={() => dispatch(undo.op)}
+                onClick={() => dispatch(undoOp)}
                 className="min-h-10 shrink-0 rounded-full bg-paper px-4 font-bold text-ink hover:bg-soft focus-visible:outline-paper"
               >
                 {t('undo')}

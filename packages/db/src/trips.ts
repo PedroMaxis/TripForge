@@ -12,6 +12,7 @@ import type { AnyDb } from './client'
 import { days, items, tripMembers, trips, users } from './schema'
 
 const uuid = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
+export const isUuid = (text: string) => uuid.test(text)
 
 /** Postgres gives times back with seconds. */
 const toTime = (time: string | null) => time?.slice(0, 5) ?? null
@@ -103,7 +104,7 @@ export async function listTrips(db: AnyDb, userId: string): Promise<TripSummary[
 
 /** The whole trip as one person sees it, or null when it is not theirs to see. */
 export async function getTrip(db: AnyDb, userId: string, tripId: string): Promise<Trip | null> {
-  if (!uuid.test(tripId)) return null
+  if (!isUuid(tripId)) return null
   // One snapshot, so the revision always matches the items.
   return db.transaction(
     async (tx) => {

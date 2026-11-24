@@ -32,6 +32,8 @@ type Props = {
   /** Its place in the day; null for an idea. */
   number: number | null
   days: TripDay[]
+  /** Who else has it open. */
+  editor: string | null
   /** How to get here from the stop before. */
   travel: string | null
   /** Why it cannot be reached on time, already in words. */
@@ -47,7 +49,7 @@ type Props = {
 }
 
 export function Stop(props: Props) {
-  const { item, number, travel, late, open, canEdit, onToggle } = props
+  const { item, number, editor, travel, late, open, canEdit, onToggle } = props
   const t = useTranslations('Trip')
   const {
     setNodeRef,
@@ -100,6 +102,11 @@ export function Stop(props: Props) {
             <span className="block text-sm text-ink-2 tabular-nums">
               {[when, item.placeName !== item.title && item.placeName].filter(Boolean).join(', ')}
               {late && <strong className="font-bold text-danger"> {late}</strong>}
+            </span>
+          )}
+          {editor && (
+            <span className="mt-1 inline-block rounded-full bg-warm px-2 py-0.5 text-xs font-medium">
+              {t('editing', { name: editor })}
             </span>
           )}
           {travel && <span className="block text-sm text-muted tabular-nums">{travel}</span>}

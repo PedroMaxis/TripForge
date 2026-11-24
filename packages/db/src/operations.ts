@@ -1,16 +1,19 @@
 import {
   areTripDates,
+  type Conflict,
+  clashingFields,
   datesBetween,
   daysApart,
   type Operation,
   type OperationErrorCode,
+  type OperationResult,
   positionBetween,
   shiftDate,
   type TripItem,
 } from '@tripforge/core'
 import { and, asc, desc, eq, gte, inArray, isNull, ne, sql } from 'drizzle-orm'
 import type { AnyDb } from './client'
-import { activityLog, days, items, tripMembers, trips } from './schema'
+import { activityLog, days, items, tripMembers, trips, users } from './schema'
 import { toTripItem } from './trips'
 
 export class OperationError extends Error {
@@ -21,8 +24,6 @@ export class OperationError extends Error {
 
 export type Tx = Parameters<Parameters<AnyDb['transaction']>[0]>[0]
 type Op<T extends Operation['type']> = Extract<Operation, { type: T }>
-
-export type OperationResult = { revision: number; item?: TripItem }
 
 const inList = (tripId: string, dayId: string | null) =>
   and(
@@ -231,6 +232,61 @@ async function run(
   }
 }
 
+/**
+ * Splits an edit made offline: fields someone else changed since keep the newer value, the rest
+ * goes through.
+ */
+async function settleQueued(
+  tx: Tx,
+  userId: string,
+  tripId: string,
+  op: Op<'item.update'>,
+): Promise<{ op: Op<'item.update'> | null; conflict?: Conflict }> {
+  const item = toTripItem(await findLiveItem(tx, tripId, op.itemId))
+  const log = await tx
+    .select({ payload: activityLog.payload, userId: activityLog.userId, name: users.name })
+    .from(activityLog)
+    .innerJoin(users, eq(users.id, activityLog.userId))
+    .where(
+      and(
+        eq(activityLog.itemId, op.itemId),
+        eq(activityLog.action, 'item.update'),
+        ne(activityLog.userId, userId),
+      ),
+    )
+    .orderBy(asc(activityLog.revision))
+  const changed = new Map<string, string>()
+  for (const { payload, name } of log) {
+    const past = payload as { op: Op<'item.update'>; result: OperationResult }
+    if ((past.result.item?.version ?? 0) <= op.baseVersion) continue
+    for (const field of Object.keys(past.op.fields)) changed.set(field, name)
+  }
+
+  const fields = Object.entries(op.fields)
+  const differs = fields.filter(([f, value]) => item[f as keyof TripItem] !== value)
+  const clashing = clashingFields(
+    differs.map(([f]) => f),
+    new Set(changed.keys()),
+  )
+  // A place goes whole, including the parts that happen to be the same.
+  const dropped = clashingFields(
+    fields.map(([f]) => f),
+    new Set(clashing),
+  )
+  if (dropped.length === 0) return { op }
+
+  const only = (source: object) =>
+    Object.fromEntries(Object.entries(source).filter(([f]) => dropped.includes(f)))
+  const conflict: Conflict = {
+    itemId: op.itemId,
+    userName: changed.get(dropped.find((f) => changed.has(f)) ?? '') ?? '',
+    mine: only(op.fields),
+    theirs: only(item),
+  }
+  const kept = Object.fromEntries(fields.filter(([f]) => !dropped.includes(f)))
+  return { op: Object.keys(kept).length > 0 ? { ...op, fields: kept } : null, conflict }
+}
+
 /** Moves the trip to its next revision, logs what happened and tells the realtime server. */
 export async function record(tx: Tx, entry: typeof activityLog.$inferInsert) {
   const { tripId, revision } = entry
@@ -245,8 +301,9 @@ export async function record(tx: Tx, entry: typeof activityLog.$inferInsert) {
  */
 export async function applyOperation(
   db: AnyDb,
-  { userId, tripId, opId, op }: { userId: string; tripId: string; opId: string; op: Operation },
+  request: { userId: string; tripId: string; opId: string; op: Operation; queued?: boolean },
 ): Promise<OperationResult> {
+  const { userId, tripId, opId, queued } = request
   return db.transaction(async (tx) => {
     const [trip] = await tx.select().from(trips).where(eq(trips.id, tripId)).for('update')
     const [member] = await tx
@@ -267,9 +324,20 @@ export async function applyOperation(
       )
     if (done) return (done.payload as { result: OperationResult }).result
 
+    const { op, conflict } =
+      queued && request.op.type === 'item.update'
+        ? await settleQueued(tx, userId, trip.id, request.op)
+        : { op: request.op, conflict: undefined }
+    // Nothing of it is left: no change, so no revision, and a retry finds the same.
+    if (!op) return { revision: trip.revision, conflict }
+
     const item = await run(tx, userId, trip, op)
     const revision = trip.revision + 1
-    const result: OperationResult = item ? { revision, item } : { revision }
+    const result: OperationResult = {
+      revision,
+      ...(item && { item }),
+      ...(conflict && { conflict }),
+    }
     const itemId = 'itemId' in op ? op.itemId : null
     await record(tx, {
       tripId,

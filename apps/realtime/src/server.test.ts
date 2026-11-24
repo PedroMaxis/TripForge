@@ -9,7 +9,12 @@ let server: RealtimeServer
 let sockets: Socket[] = []
 
 beforeEach(async () => {
-  server = await startServer({ port: 0, secret, allowedOrigin: 'http://localhost:3000' })
+  server = await startServer({
+    port: 0,
+    secret,
+    allowedOrigin: 'http://localhost:3000',
+    trips: { access: async () => null, entriesSince: async () => [] },
+  })
 })
 afterEach(async () => {
   for (const s of sockets) s.disconnect()

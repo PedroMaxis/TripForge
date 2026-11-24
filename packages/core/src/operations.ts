@@ -79,7 +79,12 @@ export const operationSchema = z.discriminatedUnion('type', [
 
 export type Operation = z.infer<typeof operationSchema>
 
-export const operationRequestSchema = z.strictObject({ opId: id, op: operationSchema })
+export const operationRequestSchema = z.strictObject({
+  opId: id,
+  op: operationSchema,
+  /** Made while there was no connection, so it may be older than it looks. */
+  queued: z.boolean().optional(),
+})
 export type OperationRequest = z.infer<typeof operationRequestSchema>
 
 export const operationErrors = ['forbidden', 'not_found', 'deleted', 'invalid'] as const

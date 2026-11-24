@@ -128,6 +128,23 @@
     "late": {
       "overlap": "starts before the last one ends",
       "travel": "no time to get there"
+    },
+    "editing": "{name} is editing",
+    "deletedBy": "{name} deleted {title}",
+    "overwritten": "{name} also changed {title} just now",
+    "signedOut": "Your session ended. Changes are kept on this device.",
+    "signIn": "Sign in",
+    "revoked": "You no longer have access to this trip",
+    "revokedBody": "Whoever created it removed you, or you left.",
+    "myTrips": "My trips",
+    "history": "History",
+    "conflict": {
+      "label": "Conflict in {title}",
+      "body": "{name} changed “{title}” while you were offline. Which version stays?",
+      "mine": "Yours",
+      "empty": "empty",
+      "useMine": "Use mine",
+      "keepTheirs": "Keep {name}’s"
     }
   },
   "Map": {
@@ -200,5 +217,29 @@
   "PasswordMail": {
     "subject": "Your new TripForge password",
     "body": "Someone asked for a new TripForge password for this email. To choose it, open this link within an hour:\n\n{link}\n\nIf it was not you, ignore this message."
+  },
+  "History": {
+    "title": "History",
+    "empty": "Nothing has changed yet.",
+    "filter": "Day",
+    "allDays": "All days",
+    "ideas": "Ideas",
+    "dayNumber": "Day {number}",
+    "show": "Show",
+    "entries": {
+      "item_create": "{name} added {title}",
+      "item_update": "{name} edited {title}",
+      "item_move": "{name} moved {title} to {day}",
+      "item_delete": "{name} deleted {title}",
+      "item_restore": "{name} brought back {title}",
+      "day_update": "{name} edited {day}",
+      "trip_update": "{name} changed the trip settings",
+      "archived": "{name} archived the trip",
+      "unarchived": "{name} brought the trip back",
+      "joined": "{name} joined",
+      "left": "{name} left",
+      "removed": "{name} removed {other}",
+      "role": "{name} changed the role of {other}"
+    }
   }
 }

@@ -37,11 +37,13 @@ export default async function TripPage({ params, searchParams }: Props) {
       : (trip.days.find((d) => d.date === day) ??
         trip.days.find((d) => d.date === today) ??
         trip.days[0])
-  const { MAP_STYLE_URL, TERRAIN_URL } = env()
+  const { MAP_STYLE_URL, TERRAIN_URL, REALTIME_URL } = env()
   return (
     <TripScreen
       initial={trip}
       initialDayId={start?.id ?? null}
+      userId={session.user.id}
+      realtimeUrl={REALTIME_URL}
       sources={{ styleUrl: MAP_STYLE_URL, terrainUrl: TERRAIN_URL }}
     />
   )

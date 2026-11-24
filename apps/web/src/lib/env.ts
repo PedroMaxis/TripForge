@@ -15,6 +15,8 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(32),
   REALTIME_SECRET: z.string().min(32),
+  /** Only when the realtime server is not behind the same address as the app. */
+  REALTIME_URL: optional,
   PHOTON_URL: withDefault('https://photon.komoot.io'),
   /** "off" turns street routes off. */
   ROUTING_URL: withDefault('https://routing.openstreetmap.de'),
