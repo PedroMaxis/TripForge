@@ -13,7 +13,7 @@ export default async function TripSettingsPage({
   params: Promise<{ tripId: string }>
 }) {
   const session = await getSession()
-  if (!session) return redirect({ href: '/', locale: await getLocale() })
+  if (!session) return redirect({ href: '/sign-in', locale: await getLocale() })
   const trip = await getTrip(db(), session.user.id, (await params).tripId)
   if (!trip || trip.role === 'viewer') notFound()
   const t = await getTranslations('TripForm')

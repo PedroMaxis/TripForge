@@ -23,7 +23,7 @@ async function signUp(page: Page, email: string) {
 }
 
 async function signIn(page: Page, email: string, withPassword = password) {
-  await page.goto('/en')
+  await page.goto('/en/sign-in')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(withPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
@@ -31,7 +31,7 @@ async function signIn(page: Page, email: string, withPassword = password) {
 
 test('a new person signs up and lands on their trips', async ({ page }) => {
   await page.goto('/en')
-  await page.getByRole('link', { name: 'Create an account' }).click()
+  await page.getByRole('link', { name: 'Create an account' }).first().click()
   await expect(page).toHaveURL('/en/sign-up')
   await signUp(page, newEmail())
   await expect(page).toHaveURL('/en/trips')
@@ -89,7 +89,7 @@ test('a wrong password and an unknown email get the same answer', async ({ page 
   await expect(page.getByText('Wrong email or password.')).toBeVisible()
   await signIn(page, newEmail())
   await expect(page.getByText('Wrong email or password.')).toBeVisible()
-  await expect(page).toHaveURL('/en')
+  await expect(page).toHaveURL('/en/sign-in')
 })
 
 test('an email can only be used once', async ({ page }) => {
@@ -132,7 +132,7 @@ test('someone already signed in skips the sign-up page', async ({ page }) => {
 test('without JavaScript the password never ends up in the address bar', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, baseURL: env.APP_URL })
   const page = await context.newPage()
-  await page.goto('/en')
+  await page.goto('/en/sign-in')
   await page.getByLabel('Email').fill('ana@example.com')
   await page.getByLabel('Password').fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()

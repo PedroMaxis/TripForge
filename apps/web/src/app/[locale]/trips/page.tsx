@@ -37,7 +37,7 @@ function TripCard({ trip, locale }: { trip: TripSummary; locale: string }) {
 export default async function TripsPage() {
   const locale = await getLocale()
   const session = await getSession()
-  if (!session) return redirect({ href: '/', locale })
+  if (!session) return redirect({ href: '/sign-in', locale })
   const t = await getTranslations('Trips')
   const trips = await listTrips(db(), session.user.id)
   // Without a trip in hand there is no better clock than UTC to split past from upcoming.

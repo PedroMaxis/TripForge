@@ -19,7 +19,7 @@ export async function createTripAction(
 ): Promise<TripFormError | null> {
   const prefix = `/${hasLocale(routing.locales, locale) ? locale : routing.defaultLocale}`
   const session = await getSession()
-  if (!session) redirect(prefix)
+  if (!session) redirect(`${prefix}/sign-in`)
   const parsed = newTripSchema.safeParse(readTripForm(Object.fromEntries(form)))
   if (!parsed.success) return firstError(parsed.error)
   const tripId = await createTrip(db(), session.user.id, parsed.data)

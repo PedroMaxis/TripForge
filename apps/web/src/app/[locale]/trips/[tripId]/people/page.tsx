@@ -9,7 +9,7 @@ import { db } from '@/lib/db'
 
 export default async function PeoplePage({ params }: { params: Promise<{ tripId: string }> }) {
   const session = await getSession()
-  if (!session) return redirect({ href: '/', locale: await getLocale() })
+  if (!session) return redirect({ href: '/sign-in', locale: await getLocale() })
   const trip = await getTrip(db(), session.user.id, (await params).tripId)
   if (!trip) notFound()
   const invites = trip.role === 'owner' ? await listInvites(db(), session.user.id, trip.id) : []

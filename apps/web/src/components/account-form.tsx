@@ -83,7 +83,7 @@ export function AccountForm({
         {isSignUp ? t('createAccount') : t('signIn')}
       </button>
       <Link
-        href={{ pathname: isSignUp ? '/' : '/sign-up', query: next ? { next } : {} }}
+        href={{ pathname: isSignUp ? '/sign-in' : '/sign-up', query: next ? { next } : {} }}
         className="py-2 text-accent underline underline-offset-4"
       >
         {isSignUp ? t('goToSignIn') : t('goToSignUp')}

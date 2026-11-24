@@ -129,7 +129,7 @@ test('a guest sees the people, manages none, and can leave', async ({ page, brow
 test('sign-in only ever continues to an invite', async ({ page }) => {
   await signIn(page.context(), 'Ana')
   for (const next of ['https://evil.example', '//evil.example', '/trips/../../x']) {
-    await page.goto(`/en?next=${encodeURIComponent(next)}`)
+    await page.goto(`/en/sign-in?next=${encodeURIComponent(next)}`)
     await expect(page).toHaveURL('/en/trips')
   }
 })

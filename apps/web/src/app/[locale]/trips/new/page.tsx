@@ -5,7 +5,7 @@ import { redirect } from '@/i18n/navigation'
 import { getSession } from '@/lib/auth'
 
 export default async function NewTripPage() {
-  if (!(await getSession())) redirect({ href: '/', locale: await getLocale() })
+  if (!(await getSession())) redirect({ href: '/sign-in', locale: await getLocale() })
   const t = await getTranslations('TripForm')
   return (
     <>

@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
+import { formatDistance, formatDuration } from '@/lib/travel'
 import { createTripApi } from '@/lib/trip-api'
 import { createTripStore, itemsOf, type Notice, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
@@ -47,14 +48,6 @@ const collisions: CollisionDetection = (args) => {
     droppableContainers: args.droppableContainers.filter((c) => !isLeg(c.id)),
   })
 }
-
-const kilometers = (meters: number, locale: string) =>
-  new Intl.NumberFormat(locale, {
-    style: 'unit',
-    unit: 'kilometer',
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  }).format(meters / 1000)
 
 export function TripScreen({
   initial,
@@ -129,8 +122,8 @@ export function TripScreen({
     return {
       travel: leg
         ? t(`travel.${leg.mode}`, {
-            minutes: Math.max(1, Math.round(leg.seconds / 60)),
-            distance: kilometers(leg.meters, locale),
+            time: formatDuration(leg.seconds),
+            distance: formatDistance(leg.meters, locale),
           })
         : null,
       late: late ? t(`late.${late}`) : null,
@@ -262,7 +255,7 @@ export function TripScreen({
             {sync === 'signedOut' && (
               <>
                 {' '}
-                <Link href="/" className="font-bold underline underline-offset-4">
+                <Link href="/sign-in" className="font-bold underline underline-offset-4">
                   {t('signIn')}
                 </Link>
               </>
@@ -356,7 +349,7 @@ export function TripScreen({
                         month: 'long',
                       })
                     : t('ideasBody')}
-                  {meters > 0 && `, ${t('byStreet', { distance: kilometers(meters, locale) })}`}
+                  {meters > 0 && `, ${t('byStreet', { distance: formatDistance(meters, locale) })}`}
                 </p>
               </div>
               {canEdit && (

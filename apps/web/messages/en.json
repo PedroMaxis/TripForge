@@ -12,7 +12,17 @@
     "f2b": "Distance and time by street, on foot or by car, and a warning when there is no time to get there.",
     "f3": "No connection, no problem",
     "f3b": "What you change offline is kept and sent later. If someone changed the same thing, you choose.",
-    "credit": "Map © OpenMapTiles and OpenFreeMap, data from OpenStreetMap. Routes: OSRM, FOSSGIS. Relief: Mapzen, NASA SRTM."
+    "credit": "Map © OpenMapTiles and OpenFreeMap, data from OpenStreetMap. Routes: OSRM, FOSSGIS. Relief: Mapzen, NASA SRTM.",
+    "create": "Create an account",
+    "signIn": "Sign in",
+    "p2": "Every stop in its place",
+    "p2b": "Search for a name and it lands on the map, in the order of the day.",
+    "p3": "The way, by street",
+    "p3b": "Real distance and time between stops, on foot or by car. This one is 15 km across Belo Horizonte.",
+    "p4": "Everyone together, live",
+    "p4b": "You move a stop and Ana sees it at once, on her phone.",
+    "appTitle": "The whole trip on one screen",
+    "end": "Start with your next trip"
   },
   "Trips": {
     "title": "My trips",
@@ -130,8 +140,8 @@
     "people": "People",
     "byStreet": "{distance} by street",
     "travel": {
-      "foot": "{minutes} min on foot, {distance}",
-      "car": "{minutes} min by car, {distance}"
+      "foot": "{time} on foot, {distance}",
+      "car": "{time} by car, {distance}"
     },
     "late": {
       "overlap": "starts before the last one ends",
@@ -249,5 +259,8 @@
       "removed": "{name} removed {other}",
       "role": "{name} changed the role of {other}"
     }
+  },
+  "SignIn": {
+    "title": "Welcome back"
   }
 }

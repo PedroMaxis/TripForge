@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TripPage({ params, searchParams }: Props) {
   const { session, trip } = await load((await params).tripId)
-  if (!session) return redirect({ href: '/', locale: await getLocale() })
+  if (!session) return redirect({ href: '/sign-in', locale: await getLocale() })
   if (!trip) notFound()
   const { day } = await searchParams
   const today = todayIn(trip.timezone)

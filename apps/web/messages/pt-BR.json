@@ -12,7 +12,17 @@
     "f2b": "Distância e tempo pelas ruas, a pé ou de carro, e um aviso quando não dá tempo de chegar.",
     "f3": "Sem internet, sem problema",
     "f3b": "O que você muda sem conexão fica guardado e vai depois. Se alguém mudou a mesma coisa, você escolhe.",
-    "credit": "Mapa © OpenMapTiles e OpenFreeMap, dados do OpenStreetMap. Rotas: OSRM, FOSSGIS. Relevo: Mapzen, NASA SRTM."
+    "credit": "Mapa © OpenMapTiles e OpenFreeMap, dados do OpenStreetMap. Rotas: OSRM, FOSSGIS. Relevo: Mapzen, NASA SRTM.",
+    "create": "Criar uma conta",
+    "signIn": "Entrar",
+    "p2": "Cada parada no seu lugar",
+    "p2b": "Busque pelo nome e ela cai no mapa, na ordem do dia.",
+    "p3": "O caminho, pelas ruas",
+    "p3b": "Distância e tempo reais entre as paradas, a pé ou de carro. Este tem 15 km por Belo Horizonte.",
+    "p4": "Todo mundo junto, ao vivo",
+    "p4b": "Você muda uma parada e a Ana vê na hora, no celular dela.",
+    "appTitle": "A viagem inteira numa tela só",
+    "end": "Comece pela próxima viagem"
   },
   "Trips": {
     "title": "Minhas viagens",
@@ -130,8 +140,8 @@
     "people": "Pessoas",
     "byStreet": "{distance} pelas ruas",
     "travel": {
-      "foot": "{minutes} min a pé, {distance}",
-      "car": "{minutes} min de carro, {distance}"
+      "foot": "{time} a pé, {distance}",
+      "car": "{time} de carro, {distance}"
     },
     "late": {
       "overlap": "começa antes da anterior acabar",
@@ -249,5 +259,8 @@
       "removed": "{name} removeu {other}",
       "role": "{name} mudou o papel de {other}"
     }
+  },
+  "SignIn": {
+    "title": "Que bom te ver de novo"
   }
 }

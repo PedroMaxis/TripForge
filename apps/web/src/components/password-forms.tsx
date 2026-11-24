@@ -64,7 +64,7 @@ export function ResetForm({ token }: { token: string }) {
         <p role="status" className="rounded-2xl bg-mist p-5">
           {t('done')}
         </p>
-        <Link href="/" className="btn btn-primary">
+        <Link href="/sign-in" className="btn btn-primary">
           {t('signIn')}
         </Link>
       </div>

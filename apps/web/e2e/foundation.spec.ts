@@ -16,14 +16,14 @@ test.describe('languages', () => {
       await page.goto('/')
       await expect(page).toHaveURL('/pt-BR')
       await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR')
-      await expect(page.getByRole('button', { name: 'Entrar' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Entrar' }).first()).toBeVisible()
     })
   })
 
   test('any other browser opens in English, and can switch', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveURL('/en')
-    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible()
     await page.getByRole('link', { name: 'Português' }).click()
     await expect(page).toHaveURL('/pt-BR')
     await page.goto('/')
@@ -36,9 +36,9 @@ test.describe('languages', () => {
 })
 
 test.describe('signed out', () => {
-  test('the trips page sends you to the landing page', async ({ page }) => {
+  test('the trips page asks you to sign in', async ({ page }) => {
     await page.goto('/pt-BR/trips')
-    await expect(page).toHaveURL('/pt-BR')
+    await expect(page).toHaveURL('/pt-BR/sign-in')
   })
 
   test('cannot get a realtime token', async ({ request }) => {
@@ -70,6 +70,6 @@ test.describe('signed in', () => {
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page).toHaveURL('/en')
     await page.goto('/en/trips')
-    await expect(page).toHaveURL('/en')
+    await expect(page).toHaveURL('/en/sign-in')
   })
 })

@@ -22,7 +22,7 @@ async function signUp(page: Page, email: string) {
   await expect(page).toHaveURL('/en/trips')
 }
 async function ask(page: Page, email: string) {
-  await page.goto('/en')
+  await page.goto('/en/sign-in')
   await page.getByRole('link', { name: 'I forgot my password' }).click()
   // Both pages have an email field; this is the wrong moment to mix them up.
   await expect(page).toHaveURL('/en/forgot')
@@ -53,7 +53,7 @@ test('a forgotten password is replaced by email, and other sessions end', async 
   await expect(other.getByText('Password changed. You can sign in now.')).toBeVisible()
 
   await page.goto('/en/trips')
-  await expect(page).toHaveURL('/en')
+  await expect(page).toHaveURL('/en/sign-in')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill('a brand new password')
   await page.getByRole('button', { name: 'Sign in' }).click()

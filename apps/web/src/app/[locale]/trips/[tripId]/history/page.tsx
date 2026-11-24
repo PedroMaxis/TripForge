@@ -15,7 +15,7 @@ type Props = {
 export default async function HistoryPage({ params, searchParams }: Props) {
   const locale = await getLocale()
   const session = await getSession()
-  if (!session) return redirect({ href: '/', locale })
+  if (!session) return redirect({ href: '/sign-in', locale })
   const { tripId } = await params
   const trip = await getTrip(db(), session.user.id, tripId)
   const entries = trip && (await recentLog(db(), session.user.id, tripId))
