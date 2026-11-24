@@ -17,7 +17,16 @@ function errorKey({ status, code }: Failure) {
   return 'unexpected'
 }
 
-export function AccountForm({ mode }: { mode: Mode }) {
+export function AccountForm({
+  mode,
+  next,
+  canRecover = false,
+}: {
+  mode: Mode
+  /** Where to go afterwards; already checked with safeNext. */
+  next?: string
+  canRecover?: boolean
+}) {
   const t = useTranslations('Account')
   const locale = useLocale()
   const router = useRouter()
@@ -43,7 +52,7 @@ export function AccountForm({ mode }: { mode: Mode }) {
         return
       }
       // Stays pending until the trips page replaces the form.
-      router.replace('/trips')
+      router.replace(next ?? '/trips')
       router.refresh()
     } catch {
       setError('unexpected')
@@ -74,16 +83,21 @@ export function AccountForm({ mode }: { mode: Mode }) {
         {isSignUp ? t('createAccount') : t('signIn')}
       </button>
       <Link
-        href={isSignUp ? '/' : '/sign-up'}
+        href={{ pathname: isSignUp ? '/' : '/sign-up', query: next ? { next } : {} }}
         className="py-2 text-accent underline underline-offset-4"
       >
         {isSignUp ? t('goToSignIn') : t('goToSignUp')}
       </Link>
+      {canRecover && (
+        <Link href="/forgot" className="py-2 text-accent underline underline-offset-4">
+          {t('forgot')}
+        </Link>
+      )}
     </form>
   )
 }
 
-function Field({
+export function Field({
   label,
   hint,
   ...input

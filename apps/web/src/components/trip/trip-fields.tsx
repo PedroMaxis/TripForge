@@ -3,10 +3,13 @@
 import { useTranslations } from 'next-intl'
 import { useEffect, useId, useState } from 'react'
 import type { TripFormError } from '@/lib/trips'
+import { PlaceSearch } from '../place-search'
 
 type Values = {
   title: string
   destination: string
+  destinationLat: number | null
+  destinationLng: number | null
   startDate: string
   endDate: string
   timezone: string
@@ -27,12 +30,20 @@ export function TripFields({
     startDate: values?.startDate ?? '',
     endDate: values?.endDate ?? '',
   })
+  const [destination, setDestination] = useState(values?.destination ?? '')
+  const [point, setPoint] = useState(
+    values && values.destinationLat !== null && values.destinationLng !== null
+      ? { lat: values.destinationLat, lng: values.destinationLng }
+      : null,
+  )
   // The list of timezones is the browser's, so it is only known after mounting.
   const [zones, setZones] = useState<string[]>(values ? [values.timezone] : [])
   const [zone, setZone] = useState(values?.timezone ?? '')
   useEffect(() => {
     const own = Intl.DateTimeFormat().resolvedOptions().timeZone
-    setZones([...new Set([own, ...Intl.supportedValuesOf('timeZone')])].sort())
+    setZones((current) =>
+      [...new Set([own, ...current, ...Intl.supportedValuesOf('timeZone')])].sort(),
+    )
     setZone((current) => current || own)
   }, [])
 
@@ -41,23 +52,6 @@ export function TripFields({
     setDates(changed)
     onDates?.(changed.startDate, changed.endDate)
   }
-
-  const text = (name: 'title' | 'destination', max: number) => (
-    <div>
-      <label htmlFor={`${id}-${name}`} className="font-medium">
-        {t(name)}
-      </label>
-      <input
-        id={`${id}-${name}`}
-        name={name}
-        defaultValue={values?.[name]}
-        maxLength={max}
-        required
-        aria-invalid={error === name}
-        className="field mt-1"
-      />
-    </div>
-  )
 
   const date = (name: 'startDate' | 'endDate') => (
     <div>
@@ -79,8 +73,47 @@ export function TripFields({
 
   return (
     <>
-      {text('title', 120)}
-      {text('destination', 200)}
+      <div>
+        <label htmlFor={`${id}-title`} className="font-medium">
+          {t('title')}
+        </label>
+        <input
+          id={`${id}-title`}
+          name="title"
+          defaultValue={values?.title}
+          maxLength={120}
+          required
+          aria-invalid={error === 'title'}
+          className="field mt-1"
+        />
+      </div>
+      <div>
+        <label htmlFor={`${id}-destination`} className="font-medium">
+          {t('destination')}
+        </label>
+        <PlaceSearch
+          id={`${id}-destination`}
+          name="destination"
+          value={destination}
+          near={null}
+          maxLength={200}
+          required
+          aria-invalid={error === 'destination'}
+          onText={(text) => {
+            setDestination(text)
+            setPoint(null)
+          }}
+          onPick={(place) => {
+            setDestination(place.name)
+            setPoint({ lat: place.lat, lng: place.lng })
+            setZones((current) => [...new Set([...current, place.timezone])].sort())
+            setZone(place.timezone)
+          }}
+          className="field mt-1"
+        />
+        <input type="hidden" name="destinationLat" value={point?.lat ?? ''} />
+        <input type="hidden" name="destinationLng" value={point?.lng ?? ''} />
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {date('startDate')}
         {date('endDate')}

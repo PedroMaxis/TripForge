@@ -2,6 +2,7 @@ import type { TripSummary } from '@tripforge/core'
 import { listTrips } from '@tripforge/db'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
+import { Cover } from '@/components/trip/cover'
 import { People } from '@/components/trip/people'
 import { Link, redirect } from '@/i18n/navigation'
 import { signOut } from '@/lib/actions'
@@ -12,20 +13,22 @@ import { db } from '@/lib/db'
 function TripCard({ trip, locale }: { trip: TripSummary; locale: string }) {
   return (
     <li>
-      <Link
-        href={`/trips/${trip.id}`}
-        className="flex min-h-40 flex-col justify-between gap-6 rounded-2xl bg-mist p-6 transition-colors hover:bg-soft"
-      >
-        <span>
-          <span className="block font-display text-2xl leading-tight [overflow-wrap:anywhere]">
-            {trip.title}
+      <Link href={`/trips/${trip.id}`} className="group block rounded-2xl">
+        <Cover
+          trip={trip}
+          className="flex min-h-44 flex-col justify-between gap-6 rounded-2xl p-6 group-hover:bg-soft"
+        >
+          <span>
+            <span className="block font-display text-2xl leading-tight [overflow-wrap:anywhere]">
+              {trip.title}
+            </span>
+            <span className="mt-1 block text-ink-2">{trip.destination}</span>
           </span>
-          <span className="mt-1 block text-ink-2">{trip.destination}</span>
-        </span>
-        <span className="flex items-end justify-between gap-4 text-sm text-ink-2">
-          {formatRange(trip.startDate, trip.endDate, locale)}
-          <People members={trip.members} />
-        </span>
+          <span className="flex items-end justify-between gap-4 text-sm text-ink-2">
+            {formatRange(trip.startDate, trip.endDate, locale)}
+            <People members={trip.members} />
+          </span>
+        </Cover>
       </Link>
     </li>
   )

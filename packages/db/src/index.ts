@@ -1,4 +1,6 @@
 export * from './client'
+export * from './members'
 export * from './operations'
+export * from './routes'
 export * from './schema'
 export * from './trips'

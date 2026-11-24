@@ -12,7 +12,9 @@ import {
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useId, useRef } from 'react'
 import { formatDate } from '@/lib/dates'
+import type { Near } from '../place-search'
 import { AutoField } from './auto-field'
+import { PlaceField } from './place-field'
 
 type Fields = Extract<Operation, { type: 'item.update' }>['fields']
 
@@ -30,6 +32,11 @@ type Props = {
   /** Its place in the day; null for an idea. */
   number: number | null
   days: TripDay[]
+  /** How to get here from the stop before. */
+  travel: string | null
+  /** Why it cannot be reached on time, already in words. */
+  late: string | null
+  near: Near
   dayName: (index: number) => string
   open: boolean
   canEdit: boolean
@@ -40,7 +47,7 @@ type Props = {
 }
 
 export function Stop(props: Props) {
-  const { item, number, open, canEdit, onToggle } = props
+  const { item, number, travel, late, open, canEdit, onToggle } = props
   const t = useTranslations('Trip')
   const {
     setNodeRef,
@@ -89,11 +96,13 @@ export function Stop(props: Props) {
           >
             {item.title}
           </span>
-          {(when || item.placeName) && (
+          {(when || late || item.placeName) && (
             <span className="block text-sm text-ink-2 tabular-nums">
-              {[when, item.placeName].filter(Boolean).join(', ')}
+              {[when, item.placeName !== item.title && item.placeName].filter(Boolean).join(', ')}
+              {late && <strong className="font-bold text-danger"> {late}</strong>}
             </span>
           )}
+          {travel && <span className="block text-sm text-muted tabular-nums">{travel}</span>}
         </button>
         <span title={t(`kinds.${item.kind}`)} className="shrink-0 text-muted">
           <svg
@@ -144,17 +153,13 @@ function StopDetails({ item }: { item: TripItem }) {
   )
 }
 
-function StopForm({ item, days, dayName, onSave, onMove, onDelete }: Props) {
+function StopForm({ item, days, dayName, near, onSave, onMove, onDelete }: Props) {
   const t = useTranslations('Trip')
   const locale = useLocale()
   const id = useId()
   const label = 'text-sm font-medium'
 
-  const text = (
-    name: 'title' | 'placeName' | 'address' | 'notes',
-    caption: string,
-    max: number,
-  ) => (
+  const text = (name: 'title' | 'address' | 'notes', caption: string, max: number) => (
     <div className={name === 'title' || name === 'notes' ? 'sm:col-span-2' : undefined}>
       <label htmlFor={`${id}-${name}`} className={label}>
         {caption}
@@ -194,7 +199,12 @@ function StopForm({ item, days, dayName, onSave, onMove, onDelete }: Props) {
         {time('startTime', t('starts'))}
         {time('endTime', t('ends'))}
       </div>
-      {text('placeName', t('place'), 200)}
+      <div>
+        <label htmlFor={`${id}-place`} className={label}>
+          {t('place')}
+        </label>
+        <PlaceField id={`${id}-place`} item={item} near={near} onSave={onSave} />
+      </div>
       {text('address', t('address'), 300)}
       <div>
         <label htmlFor={`${id}-kind`} className={label}>

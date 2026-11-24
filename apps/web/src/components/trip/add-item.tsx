@@ -1,16 +1,20 @@
 'use client'
 
+import type { Place } from '@tripforge/core'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { type Near, PlaceSearch } from '../place-search'
 
 export function AddItem({
   button,
   label,
+  near,
   onAdd,
 }: {
   button: string
   label: string
-  onAdd: (title: string) => void
+  near: Near
+  onAdd: (title: string, place?: Place) => void
 }) {
   const t = useTranslations('Trip')
   const [open, setOpen] = useState(false)
@@ -38,13 +42,18 @@ export function AddItem({
         setTitle('')
       }}
     >
-      <input
-        ref={(node) => node?.focus()}
+      <PlaceSearch
+        autoFocus
         aria-label={label}
         placeholder={label}
         value={title}
-        onChange={(event) => setTitle(event.target.value)}
+        near={near}
         maxLength={200}
+        onText={setTitle}
+        onPick={(place) => {
+          onAdd(place.name, place)
+          setTitle('')
+        }}
         className="field min-w-0"
       />
       <button type="submit" className="btn btn-primary">

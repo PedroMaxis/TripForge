@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { itemKinds } from './domain'
 import { isPosition } from './position'
-import { tripFields } from './trip'
+import { arePaired, coordinates, tripFields, tripPlaceFields } from './trip'
 
 const id = z.uuid()
 const position = z.string().refine(isPosition)
@@ -23,6 +23,8 @@ const itemFields = {
   endTime: time.nullable(),
   placeName: text(200),
   address: text(300),
+  ...coordinates,
+  osmRef: text(40),
   notes: text(5000),
 }
 
@@ -30,8 +32,9 @@ export const operationSchema = z.discriminatedUnion('type', [
   z.strictObject({
     type: z.literal('trip.update'),
     fields: z
-      .strictObject({ ...tripFields, archived: z.boolean() })
+      .strictObject({ ...tripFields, ...tripPlaceFields, archived: z.boolean() })
       .partial()
+      .refine((f) => arePaired(f.destinationLat, f.destinationLng))
       .refine(notEmpty),
   }),
   z.strictObject({
@@ -49,12 +52,25 @@ export const operationSchema = z.discriminatedUnion('type', [
     position,
     title: itemFields.title,
     kind: itemFields.kind,
+    place: z
+      .strictObject({
+        placeName: itemFields.placeName,
+        address: itemFields.address,
+        lat: coordinates.lat.unwrap(),
+        lng: coordinates.lng.unwrap(),
+        osmRef: itemFields.osmRef,
+      })
+      .optional(),
   }),
   z.strictObject({
     type: z.literal('item.update'),
     itemId: id,
     baseVersion: z.int().positive(),
-    fields: z.strictObject(itemFields).partial().refine(notEmpty),
+    fields: z
+      .strictObject(itemFields)
+      .partial()
+      .refine((f) => arePaired(f.lat, f.lng))
+      .refine(notEmpty),
   }),
   z.strictObject({ type: z.literal('item.move'), itemId: id, dayId: id.nullable(), position }),
   z.strictObject({ type: z.literal('item.delete'), itemId: id }),

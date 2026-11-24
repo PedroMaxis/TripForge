@@ -42,7 +42,8 @@
       "passwordLength": "Use a password with 8 to 128 characters.",
       "tooManyAttempts": "Too many attempts. Wait a minute and try again.",
       "unexpected": "Something went wrong. Please try again."
-    }
+    },
+    "forgot": "I forgot my password"
   },
   "TripForm": {
     "newTitle": "New trip",
@@ -116,6 +117,88 @@
       "transport": "Transport",
       "lodging": "Lodging",
       "other": "Other"
+    },
+    "invite": "Invite",
+    "people": "People",
+    "byStreet": "{distance} by street",
+    "travel": {
+      "foot": "{minutes} min on foot, {distance}",
+      "car": "{minutes} min by car, {distance}"
+    },
+    "late": {
+      "overlap": "starts before the last one ends",
+      "travel": "no time to get there"
     }
+  },
+  "Map": {
+    "label": "Trip map",
+    "loading": "Opening the map",
+    "failed": "The map did not load. The itinerary still works.",
+    "retry": "Try again",
+    "all": "See all days",
+    "back": "Back to the day"
+  },
+  "People": {
+    "title": "People",
+    "members": "On this trip",
+    "you": "you",
+    "roles": {
+      "owner": "Owner",
+      "editor": "Can edit",
+      "viewer": "View only"
+    },
+    "roleOf": "Role of {name}",
+    "remove": "Remove",
+    "removeName": "Remove {name}",
+    "removeConfirm": "{name} will lose access, and every invite link will stop working.",
+    "removeYes": "Yes, remove",
+    "cancel": "Cancel",
+    "leave": "Leave trip",
+    "leaveConfirm": "You will need a new invite to come back.",
+    "leaveYes": "Yes, leave",
+    "invite": "Invite",
+    "inviteRole": "People with the link",
+    "create": "Create link",
+    "link": "Invite link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "linkOnce": "Copy it now: it is not shown again. It works for 14 days.",
+    "expires": "Works until {date}",
+    "revoke": "Revoke link",
+    "failed": "That did not work. Please try again."
+  },
+  "Invite": {
+    "as": {
+      "editor": "{name} invited you to edit this trip.",
+      "viewer": "{name} invited you to follow this trip."
+    },
+    "join": "Join the trip",
+    "signInFirst": "Sign in to join, or create an account.",
+    "gone": {
+      "revoked": "This invite was revoked.",
+      "expired": "This invite has expired.",
+      "ask": "Ask whoever sent it for a new link."
+    },
+    "back": "My trips"
+  },
+  "Password": {
+    "forgotTitle": "Forgot your password?",
+    "forgotBody": "We will email you a link to choose a new one.",
+    "email": "Email",
+    "send": "Send the link",
+    "sent": "If there is an account with this email, the link is on its way.",
+    "tooMany": "Too many attempts. Wait a minute and try again.",
+    "failed": "Something went wrong. Please try again.",
+    "resetTitle": "Choose a new password",
+    "newPassword": "New password",
+    "hint": "At least 8 characters. You will be signed out everywhere else.",
+    "save": "Save password",
+    "done": "Password changed. You can sign in now.",
+    "signIn": "Sign in",
+    "invalid": "This link no longer works."
+  },
+  "PasswordMail": {
+    "subject": "Your new TripForge password",
+    "body": "Someone asked for a new TripForge password for this email. To choose it, open this link within an hour:\n\n{link}\n\nIf it was not you, ignore this message."
   }
 }

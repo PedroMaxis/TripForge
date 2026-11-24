@@ -9,6 +9,8 @@ if (existsSync(envFile)) process.loadEnvFile(envFile)
 
 const config: NextConfig = {
   output: 'standalone',
+  // The end-to-end tests build elsewhere, so they can run beside `next dev`.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
   transpilePackages: ['@tripforge/core', '@tripforge/db'],
   poweredByHeader: false,

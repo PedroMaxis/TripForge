@@ -19,7 +19,7 @@ export class OperationError extends Error {
   }
 }
 
-type Tx = Parameters<Parameters<AnyDb['transaction']>[0]>[0]
+export type Tx = Parameters<Parameters<AnyDb['transaction']>[0]>[0]
 type Op<T extends Operation['type']> = Extract<Operation, { type: T }>
 
 export type OperationResult = { revision: number; item?: TripItem }
@@ -199,6 +199,7 @@ async function run(
           position,
           title: op.title,
           kind: op.kind,
+          ...op.place,
           updatedBy: userId,
         })
         .returning()
@@ -230,8 +231,16 @@ async function run(
   }
 }
 
+/** Moves the trip to its next revision, logs what happened and tells the realtime server. */
+export async function record(tx: Tx, entry: typeof activityLog.$inferInsert) {
+  const { tripId, revision } = entry
+  await tx.update(trips).set({ revision }).where(eq(trips.id, tripId))
+  await tx.insert(activityLog).values(entry)
+  await tx.execute(sql`select pg_notify('trip', ${JSON.stringify({ tripId, revision })})`)
+}
+
 /**
- * The only way a trip changes. Locks the trip row, so its operations run one at a time and
+ * The only way a trip changes, apart from its members (members.ts). Locks the trip row, so its operations run one at a time and
  * revisions have no gaps, and records each one once however often it is sent.
  */
 export async function applyOperation(
@@ -261,17 +270,16 @@ export async function applyOperation(
     const item = await run(tx, userId, trip, op)
     const revision = trip.revision + 1
     const result: OperationResult = item ? { revision, item } : { revision }
-    await tx.update(trips).set({ revision }).where(eq(trips.id, tripId))
-    await tx.insert(activityLog).values({
+    const itemId = 'itemId' in op ? op.itemId : null
+    await record(tx, {
       tripId,
       revision,
       opId,
       userId,
       action: op.type,
-      itemId: 'itemId' in op ? op.itemId : null,
+      itemId,
       payload: { op, result },
     })
-    await tx.execute(sql`select pg_notify('trip', ${JSON.stringify({ tripId, revision })})`)
     return result
   })
 }

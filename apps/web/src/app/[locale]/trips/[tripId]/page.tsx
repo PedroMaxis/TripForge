@@ -8,6 +8,7 @@ import { redirect } from '@/i18n/navigation'
 import { getSession } from '@/lib/auth'
 import { todayIn } from '@/lib/dates'
 import { db } from '@/lib/db'
+import { env } from '@/lib/env'
 
 type Props = {
   params: Promise<{ tripId: string }>
@@ -36,5 +37,12 @@ export default async function TripPage({ params, searchParams }: Props) {
       : (trip.days.find((d) => d.date === day) ??
         trip.days.find((d) => d.date === today) ??
         trip.days[0])
-  return <TripScreen initial={trip} initialDayId={start?.id ?? null} />
+  const { MAP_STYLE_URL, TERRAIN_URL } = env()
+  return (
+    <TripScreen
+      initial={trip}
+      initialDayId={start?.id ?? null}
+      sources={{ styleUrl: MAP_STYLE_URL, terrainUrl: TERRAIN_URL }}
+    />
+  )
 }

@@ -37,7 +37,11 @@ export function applyLocally(trip: Trip, op: Operation): Trip {
         endTime: null,
         placeName: null,
         address: null,
+        lat: null,
+        lng: null,
+        osmRef: null,
         notes: null,
+        ...op.place,
         version: 1,
         updatedBy: null,
       })

@@ -4,4 +4,11 @@ export const env = {
   APP_URL: 'http://localhost:3100',
   BETTER_AUTH_SECRET: 'e2e-only-better-auth-secret-0123456789',
   REALTIME_SECRET: 'e2e-only-realtime-secret-0123456789abc',
+  PHOTON_URL: 'http://localhost:3190/photon',
+  ROUTING_URL: 'http://localhost:3190/osrm',
+  ROUTING_INTERVAL_MS: '20',
+  MAP_STYLE_URL: 'http://localhost:3190/style.json',
+  TERRAIN_URL: 'http://localhost:3190/terrain/{z}/{x}/{y}.png',
+  SMTP_URL: 'smtp://localhost:3191',
+  MAIL_FROM: 'TripForge <hello@example.com>',
 }

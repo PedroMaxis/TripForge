@@ -17,7 +17,8 @@ const uuid = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 const toTime = (time: string | null) => time?.slice(0, 5) ?? null
 
 export function toTripItem(row: typeof items.$inferSelect): TripItem {
-  const { id, dayId, position, kind, title, placeName, address, notes, version, updatedBy } = row
+  const { id, dayId, position, kind, title, placeName, address, lat, lng, osmRef, notes } = row
+  const { version, updatedBy } = row
   return {
     id,
     dayId,
@@ -28,6 +29,9 @@ export function toTripItem(row: typeof items.$inferSelect): TripItem {
     endTime: toTime(row.endTime),
     placeName,
     address,
+    lat,
+    lng,
+    osmRef,
     notes,
     version,
     updatedBy,
@@ -68,11 +72,14 @@ function toSummary(
   row: typeof trips.$inferSelect,
   people: Awaited<ReturnType<typeof members>>,
 ): TripSummary {
-  const { id, title, destination, startDate, endDate, archivedAt } = row
+  const { id, title, destination, destinationLat, destinationLng, startDate, endDate, archivedAt } =
+    row
   return {
     id,
     title,
     destination,
+    destinationLat,
+    destinationLng,
     startDate,
     endDate,
     archivedAt: archivedAt?.toISOString() ?? null,

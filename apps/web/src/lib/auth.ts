@@ -7,6 +7,7 @@ import { headers } from 'next/headers'
 import { cache } from 'react'
 import { db } from './db'
 import { env } from './env'
+import { sendPasswordReset } from './mail'
 
 function create() {
   const e = env()
@@ -19,7 +20,19 @@ function create() {
       usePlural: true,
       schema: { users, sessions, accounts, verifications },
     }),
-    emailAndPassword: { enabled: true, minPasswordLength: 8 },
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 8,
+      revokeSessionsOnPasswordReset: true,
+      resetPasswordTokenExpiresIn: 60 * 60,
+      // Not awaited, so the answer takes the same time whether or not the account exists.
+      sendResetPassword: async ({ user, token }) => {
+        const locale = 'locale' in user ? String(user.locale) : defaultLocale
+        void sendPasswordReset({ email: user.email, locale, token }).catch((error) =>
+          console.error('Could not send the password email', error),
+        )
+      },
+    },
     user: {
       additionalFields: {
         locale: { type: [...locales], defaultValue: defaultLocale, required: false },
@@ -31,6 +44,7 @@ function create() {
       customRules: {
         '/sign-in/email': { window: 60, max: 5 },
         '/sign-up/email': { window: 60, max: 10 },
+        '/request-password-reset': { window: 60, max: 3 },
       },
     },
     // Caddy is the only thing in front of the app and it overwrites this header.

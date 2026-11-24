@@ -17,19 +17,23 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import type { Trip } from '@tripforge/core'
+import { lateFor, legKey, type Place, type Trip } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
 import { createTripStore, itemsOf, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
+import type { Near } from '../place-search'
 import { AddItem } from './add-item'
 import { AutoField } from './auto-field'
+import { Cover } from './cover'
 import { DayStrip, isLeg, legDay } from './day-strip'
 import { People } from './people'
 import { Stop } from './stop'
+import { type MapSources, TripMap } from './trip-map'
+import { useLegs } from './use-legs'
 
 // Over the strip only the pointer counts; inside the list, the nearest row.
 const collisions: CollisionDetection = (args) => {
@@ -41,12 +45,22 @@ const collisions: CollisionDetection = (args) => {
   })
 }
 
+const kilometers = (meters: number, locale: string) =>
+  new Intl.NumberFormat(locale, {
+    style: 'unit',
+    unit: 'kilometer',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(meters / 1000)
+
 export function TripScreen({
   initial,
   initialDayId,
+  sources,
 }: {
   initial: Trip
   initialDayId: string | null
+  sources: MapSources
 }) {
   const t = useTranslations('Trip')
   const locale = useLocale()
@@ -64,6 +78,42 @@ export function TripScreen({
   const day = trip.days.find((d) => d.id === dayId) ?? null
   const list = itemsOf(trip, dayId)
   const dragging = trip.items.find((i) => i.id === draggingId)
+
+  const legs = useLegs(trip, sync === 'saved')
+  const { destinationLat, destinationLng } = trip
+  const near = useMemo<Near>(
+    () =>
+      destinationLat !== null && destinationLng !== null
+        ? { lat: destinationLat, lng: destinationLng }
+        : null,
+    [destinationLat, destinationLng],
+  )
+  const hasMap = near !== null || trip.items.some((i) => i.lat !== null)
+
+  // How to reach each stop from the last one that is on the map.
+  let meters = 0
+  let previous: (typeof list)[number] | undefined
+  const arrivals = list.map((item, index) => {
+    const from = previous
+    if (item.lat !== null) previous = item
+    if (!day || index === 0) return { travel: null, late: null }
+    const leg =
+      from?.lat != null && from.lng !== null && item.lat !== null && item.lng !== null
+        ? legs[legKey({ lat: from.lat, lng: from.lng }, { lat: item.lat, lng: item.lng })]
+        : undefined
+    meters += leg?.meters ?? 0
+    const before = list[index - 1]
+    const late = before && lateFor(before, item, leg && from === before ? leg.seconds : null)
+    return {
+      travel: leg
+        ? t(`travel.${leg.mode}`, {
+            minutes: Math.max(1, Math.round(leg.seconds / 60)),
+            distance: kilometers(leg.meters, locale),
+          })
+        : null,
+      late: late ? t(`late.${late}`) : null,
+    }
+  })
 
   useEffect(() => {
     if (!undo && !rejected) return
@@ -135,9 +185,15 @@ export function TripScreen({
       onDragEnd={drop}
       onDragCancel={() => setDraggingId(null)}
     >
-      <div className="grid h-dvh grid-rows-[auto_auto_minmax(0,1fr)] md:grid-rows-[auto_minmax(0,1fr)_auto]">
-        <header className="flex items-center gap-3 px-4 py-2 md:gap-6 md:px-6">
-          <Logo />
+      <div
+        className={`grid h-dvh grid-cols-[minmax(0,1fr)] md:grid-rows-[auto_minmax(0,1fr)_auto] ${
+          hasMap
+            ? 'grid-rows-[auto_34dvh_auto_minmax(0,1fr)] md:grid-cols-[minmax(380px,464px)_minmax(0,1fr)]'
+            : 'grid-rows-[auto_auto_minmax(0,1fr)]'
+        }`}
+      >
+        <header className="col-span-full flex items-center gap-3 px-4 py-2 md:gap-6 md:px-6">
+          <Logo compact />
           <span
             data-testid="sync"
             data-state={sync}
@@ -159,6 +215,12 @@ export function TripScreen({
             <span className="max-sm:hidden">
               <People members={trip.members} />
             </span>
+            <Link
+              href={`/trips/${trip.id}/people`}
+              className={`btn ${trip.role === 'owner' ? 'btn-primary' : ''}`}
+            >
+              {trip.role === 'owner' ? t('invite') : t('people')}
+            </Link>
             {canEdit && (
               <Link href={`/trips/${trip.id}/settings`} className="btn">
                 {t('settings')}
@@ -167,22 +229,39 @@ export function TripScreen({
           </div>
         </header>
 
+        {hasMap && (
+          <TripMap
+            {...sources}
+            trip={trip}
+            dayId={dayId}
+            openId={openId}
+            legs={legs}
+            onPick={(itemId, itemDayId) => {
+              if (itemDayId !== dayId) choose(itemDayId)
+              setOpenId(itemDayId === dayId && itemId === openId ? null : itemId)
+            }}
+            className="md:col-start-2 md:row-start-2 md:mr-4 md:rounded-3xl"
+          />
+        )}
+
         <DayStrip
           trip={trip}
           current={dayId}
           dayName={dayName}
           onChoose={choose}
-          className="md:row-start-3"
+          className="col-span-full md:row-start-3"
         />
 
-        <main className="min-h-0 overflow-y-auto px-2 pb-24 md:row-start-2 md:px-6">
+        <main
+          className={`min-h-0 overflow-y-auto px-2 pb-24 md:col-start-1 md:row-start-2 ${hasMap ? '' : 'md:px-6'}`}
+        >
           <div className="mx-auto max-w-3xl">
-            <div className="mx-2 rounded-2xl bg-mist px-5 py-5 md:px-6 md:py-8">
+            <Cover trip={trip} className="mx-2 rounded-2xl px-5 py-5 md:px-6 md:pt-12 md:pb-6">
               <h1 className="text-3xl md:text-4xl">{trip.title}</h1>
               <p className="mt-2 text-sm text-ink-2">
                 {trip.destination}, {formatRange(trip.startDate, trip.endDate, locale)}
               </p>
-            </div>
+            </Cover>
 
             <div className="flex flex-wrap items-end gap-x-4 gap-y-3 px-4 pt-6 pb-3">
               <div className="min-w-0 flex-1 basis-48">
@@ -211,6 +290,7 @@ export function TripScreen({
                         month: 'long',
                       })
                     : t('ideasBody')}
+                  {meters > 0 && `, ${t('byStreet', { distance: kilometers(meters, locale) })}`}
                 </p>
               </div>
               {canEdit && (
@@ -218,7 +298,8 @@ export function TripScreen({
                   key={dayId}
                   button={day ? t('addStop') : t('addIdea')}
                   label={day ? t('newStop') : t('newIdea')}
-                  onAdd={(title) =>
+                  near={near}
+                  onAdd={(title, place?: Place) =>
                     dispatch({
                       type: 'item.create',
                       itemId: crypto.randomUUID(),
@@ -226,6 +307,15 @@ export function TripScreen({
                       position: positionAt(trip, dayId, list.length),
                       title,
                       kind: 'activity',
+                      ...(place && {
+                        place: {
+                          placeName: place.name,
+                          address: place.address,
+                          lat: place.lat,
+                          lng: place.lng,
+                          osmRef: place.osmRef,
+                        },
+                      }),
                     })
                   }
                 />
@@ -247,6 +337,9 @@ export function TripScreen({
                       key={item.id}
                       item={item}
                       number={day ? index + 1 : null}
+                      travel={arrivals[index]?.travel ?? null}
+                      late={arrivals[index]?.late ?? null}
+                      near={near}
                       days={trip.days}
                       dayName={dayName}
                       open={openId === item.id}

@@ -42,7 +42,8 @@
       "passwordLength": "Use uma senha de 8 a 128 caracteres.",
       "tooManyAttempts": "Muitas tentativas. Espere um minuto e tente de novo.",
       "unexpected": "Algo deu errado. Tente de novo."
-    }
+    },
+    "forgot": "Esqueci minha senha"
   },
   "TripForm": {
     "newTitle": "Nova viagem",
@@ -116,6 +117,88 @@
       "transport": "Transporte",
       "lodging": "Hospedagem",
       "other": "Outro"
+    },
+    "invite": "Convidar",
+    "people": "Pessoas",
+    "byStreet": "{distance} pelas ruas",
+    "travel": {
+      "foot": "{minutes} min a pé, {distance}",
+      "car": "{minutes} min de carro, {distance}"
+    },
+    "late": {
+      "overlap": "começa antes da anterior acabar",
+      "travel": "não dá tempo de chegar"
     }
+  },
+  "Map": {
+    "label": "Mapa da viagem",
+    "loading": "Abrindo o mapa",
+    "failed": "O mapa não abriu. O roteiro continua funcionando.",
+    "retry": "Tentar de novo",
+    "all": "Ver todos os dias",
+    "back": "Voltar ao dia"
+  },
+  "People": {
+    "title": "Pessoas",
+    "members": "Nesta viagem",
+    "you": "você",
+    "roles": {
+      "owner": "Criou a viagem",
+      "editor": "Pode editar",
+      "viewer": "Só leitura"
+    },
+    "roleOf": "Papel de {name}",
+    "remove": "Remover",
+    "removeName": "Remover {name}",
+    "removeConfirm": "{name} vai perder o acesso, e todos os links de convite vão parar de funcionar.",
+    "removeYes": "Sim, remover",
+    "cancel": "Cancelar",
+    "leave": "Sair da viagem",
+    "leaveConfirm": "Pra voltar, você vai precisar de um novo convite.",
+    "leaveYes": "Sim, sair",
+    "invite": "Convidar",
+    "inviteRole": "Quem tiver o link",
+    "create": "Criar link",
+    "link": "Link do convite",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "linkOnce": "Copie agora: ele não aparece de novo. Vale por 14 dias.",
+    "expires": "Vale até {date}",
+    "revoke": "Revogar link",
+    "failed": "Não deu certo. Tente de novo."
+  },
+  "Invite": {
+    "as": {
+      "editor": "{name} te convidou pra editar esta viagem.",
+      "viewer": "{name} te convidou pra acompanhar esta viagem."
+    },
+    "join": "Entrar na viagem",
+    "signInFirst": "Entre na sua conta pra participar, ou crie uma.",
+    "gone": {
+      "revoked": "Este convite foi revogado.",
+      "expired": "Este convite expirou.",
+      "ask": "Peça um novo link pra quem te enviou."
+    },
+    "back": "Minhas viagens"
+  },
+  "Password": {
+    "forgotTitle": "Esqueceu a senha?",
+    "forgotBody": "Vamos te enviar um link pra escolher uma nova.",
+    "email": "E-mail",
+    "send": "Enviar o link",
+    "sent": "Se existir uma conta com este e-mail, o link está a caminho.",
+    "tooMany": "Muitas tentativas. Espere um minuto e tente de novo.",
+    "failed": "Algo deu errado. Tente de novo.",
+    "resetTitle": "Escolha uma nova senha",
+    "newPassword": "Nova senha",
+    "hint": "Pelo menos 8 caracteres. Você vai sair da conta nos outros aparelhos.",
+    "save": "Salvar senha",
+    "done": "Senha trocada. Já dá pra entrar.",
+    "signIn": "Entrar",
+    "invalid": "Este link não funciona mais."
+  },
+  "PasswordMail": {
+    "subject": "Sua nova senha do TripForge",
+    "body": "Alguém pediu uma nova senha do TripForge pra este e-mail. Pra escolher, abra este link em até uma hora:\n\n{link}\n\nSe não foi você, ignore esta mensagem."
   }
 }

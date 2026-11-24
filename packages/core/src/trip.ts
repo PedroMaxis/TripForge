@@ -13,6 +13,14 @@ function isTimezone(zone: string) {
   }
 }
 
+const latitude = z.number().min(-90).max(90).nullable()
+const longitude = z.number().min(-180).max(180).nullable()
+export const coordinates = { lat: latitude, lng: longitude }
+
+/** Coordinates are set or cleared together. */
+export const arePaired = (a?: number | null, b?: number | null) =>
+  (a === undefined) === (b === undefined) && (a === null) === (b === null)
+
 export const tripFields = {
   title: z.string().trim().min(1).max(120),
   destination: z.string().trim().min(1).max(200),
@@ -20,13 +28,17 @@ export const tripFields = {
   endDate: z.string().refine(isDate),
   timezone: z.string().max(64).refine(isTimezone),
 }
+export const tripPlaceFields = { destinationLat: latitude, destinationLng: longitude }
 
 export function areTripDates({ startDate, endDate }: { startDate: string; endDate: string }) {
   const length = daysApart(startDate, endDate) + 1
   return length >= 1 && length <= maxTripDays
 }
 
-export const newTripSchema = z.object(tripFields).refine(areTripDates, { path: ['endDate'] })
+export const newTripSchema = z
+  .object({ ...tripFields, ...z.object(tripPlaceFields).partial().shape })
+  .refine(areTripDates, { path: ['endDate'] })
+  .refine((t) => arePaired(t.destinationLat, t.destinationLng), { path: ['destination'] })
 export type NewTrip = z.infer<typeof newTripSchema>
 
 export type TripDay = { id: string; date: string; title: string | null; notes: string | null }
@@ -42,6 +54,9 @@ export type TripItem = {
   endTime: string | null
   placeName: string | null
   address: string | null
+  lat: number | null
+  lng: number | null
+  osmRef: string | null
   notes: string | null
   version: number
   updatedBy: string | null
@@ -53,6 +68,8 @@ export type TripSummary = {
   id: string
   title: string
   destination: string
+  destinationLat: number | null
+  destinationLng: number | null
   startDate: string
   endDate: string
   archivedAt: string | null

@@ -14,6 +14,16 @@
   --accent-strong: oklch(40% 0.08 158);
   --accent-ink: oklch(99% 0.004 158);
   --danger: oklch(50% 0.16 27);
+  --map-land: oklch(97.6% 0.006 130);
+  --map-water: oklch(88% 0.035 215);
+  --map-park: oklch(94% 0.032 145);
+  --map-road: oklch(99.4% 0.002 130);
+  --map-major: oklch(92% 0.012 120);
+  --map-building: oklch(95% 0.006 130);
+  --map-contour: oklch(85% 0.03 150);
+  --map-route: oklch(46% 0.085 158);
+  --map-other: oklch(70% 0.03 158);
+  --map-label: oklch(43% 0.03 158);
 }
 
 @theme inline {
@@ -109,6 +119,49 @@
     border-radius: 10px;
     background: var(--paper);
     font-size: 1rem;
+  }
+}
+
+@layer components {
+  .pin {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--accent);
+    font:
+      700 0.875rem / 1 var(--font-manrope),
+      sans-serif;
+    cursor: pointer;
+  }
+  .pin:hover {
+    background: var(--soft);
+  }
+  .pin[aria-current="true"] {
+    z-index: 2;
+    width: 46px;
+    height: 46px;
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .pin-dot {
+    width: 16px;
+    height: 16px;
+    border-color: var(--paper);
+    background: var(--map-other);
+  }
+  .pin-dot:hover,
+  .pin-dot.is-current {
+    background: var(--accent);
+  }
+  .maplibregl-ctrl-attrib.maplibregl-ctrl {
+    background: var(--paper);
+    font:
+      400 0.6875rem / 1.4 var(--font-manrope),
+      sans-serif;
   }
 }
 

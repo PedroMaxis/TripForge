@@ -4,6 +4,7 @@ import { areTripDates, datesBetween, isDate, type Trip } from '@tripforge/core'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Link, useRouter } from '@/i18n/navigation'
+import { readTripForm } from '@/lib/trip-form'
 import type { TripFormError } from '@/lib/trips'
 import { TripFields } from './trip-fields'
 
@@ -42,9 +43,9 @@ export function TripSettings({ trip }: { trip: Trip }) {
 
   function save(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    const form = Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>
-    if (!form.title?.trim()) return setError('title')
-    if (!form.destination?.trim()) return setError('destination')
+    const form = readTripForm(Object.fromEntries(new FormData(event.currentTarget)))
+    if (!form.title.trim()) return setError('title')
+    if (!form.destination.trim()) return setError('destination')
     if (!valid) return setError('dates')
     setError(null)
     void update(form, `/trips/${trip.id}`)

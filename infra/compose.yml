@@ -33,6 +33,12 @@ services:
       DATABASE_URL: *database-url
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
       REALTIME_SECRET: ${REALTIME_SECRET:?}
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      PHOTON_URL: ${PHOTON_URL:-}
+      ROUTING_URL: ${ROUTING_URL:-}
+      MAP_STYLE_URL: ${MAP_STYLE_URL:-}
+      TERRAIN_URL: ${TERRAIN_URL:-}
     depends_on:
       migrate:
         condition: service_completed_successfully

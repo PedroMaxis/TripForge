@@ -8,6 +8,7 @@ import type { z } from 'zod'
 import { routing } from '@/i18n/routing'
 import { getSession } from './auth'
 import { db } from './db'
+import { readTripForm } from './trip-form'
 
 export type TripFormError = 'title' | 'destination' | 'dates' | 'timezone'
 
@@ -19,7 +20,7 @@ export async function createTripAction(
   const prefix = `/${hasLocale(routing.locales, locale) ? locale : routing.defaultLocale}`
   const session = await getSession()
   if (!session) redirect(prefix)
-  const parsed = newTripSchema.safeParse(Object.fromEntries(form))
+  const parsed = newTripSchema.safeParse(readTripForm(Object.fromEntries(form)))
   if (!parsed.success) return firstError(parsed.error)
   const tripId = await createTrip(db(), session.user.id, parsed.data)
   redirect(`${prefix}/trips/${tripId}`)

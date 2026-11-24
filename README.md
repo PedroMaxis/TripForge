@@ -2,7 +2,7 @@
 
 A collaborative trip planner: a group builds the itinerary day by day, together and in real time, with every stop on a map.
 
-> **Status:** phase 1 of 4. Accounts, trips and the day-by-day itinerary work, with drag and drop, ideas, undo and view-only access. Next come the map with street routes and invites, then live editing.
+> **Status:** phase 2 of 4. Accounts, trips, the day-by-day itinerary, the map with street routes, place search and invites work. Live editing comes next.
 
 ## Stack
 
@@ -51,6 +51,20 @@ pnpm test:e2e
 ## How a trip changes
 
 Every change is a small operation (`item.move`, `item.update`, `day.update`...). The screen applies it at once and sends it; the server locks the trip, checks the role, applies it, gives it the next revision and logs it, all in one transaction. Each operation carries an id, so a retry is never applied twice. Order inside a day is a fractional index: moving a stop changes one row, and the server separates two stops dropped on the same spot.
+
+## Outside services
+
+All of them are free, need no key and can be replaced with an environment variable.
+
+| What | Default | Variable |
+| --- | --- | --- |
+| Map | [OpenFreeMap](https://openfreemap.org) | `MAP_STYLE_URL` |
+| Place search | [Photon](https://photon.komoot.io) | `PHOTON_URL` |
+| Street routes | [OSRM at FOSSGIS](https://routing.openstreetmap.de) | `ROUTING_URL` (`off` draws straight lines) |
+| Relief | [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) | `TERRAIN_URL` |
+| Email | none, so password recovery is off | `SMTP_URL`, `MAIL_FROM` |
+
+The public Photon and OSRM servers are run on goodwill: searches are cached and limited per person, and routes go through one queue of at most one request a second and are stored forever. Host your own, or pay for one, before charging anyone.
 
 ## How sockets are authenticated
 

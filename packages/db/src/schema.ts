@@ -1,4 +1,11 @@
-import { defaultLocale, itemKinds, locales, operationTypes, roles } from '@tripforge/core'
+import {
+  defaultLocale,
+  itemKinds,
+  locales,
+  operationTypes,
+  roles,
+  type TravelMode,
+} from '@tripforge/core'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -236,6 +243,23 @@ export const items = pgTable(
     ),
   ],
 )
+
+/** Street routes between two places, kept so each one is asked for only once. */
+export const routeLegs = pgTable('route_legs', {
+  key: text('key').primaryKey(),
+  mode: text('mode').$type<TravelMode>().notNull(),
+  meters: integer('meters').notNull(),
+  seconds: integer('seconds').notNull(),
+  line: jsonb('line').$type<[number, number][]>().notNull(),
+  updatedAt: updatedAt(),
+})
+
+/** Contour lines of a destination, drawn once as SVG. */
+export const reliefs = pgTable('reliefs', {
+  key: text('key').primaryKey(),
+  svg: text('svg').notNull(),
+  createdAt: createdAt(),
+})
 
 export const activityLog = pgTable(
   'activity_log',
