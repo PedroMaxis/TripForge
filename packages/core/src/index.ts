@@ -1,2 +1,7 @@
+export * from './apply-locally'
+export * from './dates'
 export * from './domain'
+export * from './operations'
+export * from './position'
 export * from './realtime-token'
+export * from './trip'

@@ -1,0 +1,68 @@
+import { z } from 'zod'
+import { daysApart, isDate } from './dates'
+import type { ItemKind, Role } from './domain'
+
+export const maxTripDays = 90
+
+function isTimezone(zone: string) {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: zone })
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const tripFields = {
+  title: z.string().trim().min(1).max(120),
+  destination: z.string().trim().min(1).max(200),
+  startDate: z.string().refine(isDate),
+  endDate: z.string().refine(isDate),
+  timezone: z.string().max(64).refine(isTimezone),
+}
+
+export function areTripDates({ startDate, endDate }: { startDate: string; endDate: string }) {
+  const length = daysApart(startDate, endDate) + 1
+  return length >= 1 && length <= maxTripDays
+}
+
+export const newTripSchema = z.object(tripFields).refine(areTripDates, { path: ['endDate'] })
+export type NewTrip = z.infer<typeof newTripSchema>
+
+export type TripDay = { id: string; date: string; title: string | null; notes: string | null }
+
+export type TripItem = {
+  id: string
+  /** Null means the item is in the Ideas list. */
+  dayId: string | null
+  position: string
+  kind: ItemKind
+  title: string
+  startTime: string | null
+  endTime: string | null
+  placeName: string | null
+  address: string | null
+  notes: string | null
+  version: number
+  updatedBy: string | null
+}
+
+export type TripMember = { userId: string; name: string; image: string | null; role: Role }
+
+export type TripSummary = {
+  id: string
+  title: string
+  destination: string
+  startDate: string
+  endDate: string
+  archivedAt: string | null
+  members: TripMember[]
+}
+
+export type Trip = TripSummary & {
+  timezone: string
+  revision: number
+  role: Role
+  days: TripDay[]
+  items: TripItem[]
+}

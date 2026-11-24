@@ -70,14 +70,13 @@ export function AccountForm({ mode }: { mode: Mode }) {
       <p role="alert" className="text-danger empty:hidden">
         {error && t(`errors.${error}`)}
       </p>
-      <button
-        type="submit"
-        disabled={pending}
-        className="cursor-pointer rounded-lg bg-accent px-4 py-3 font-medium text-accent-fg hover:opacity-90 disabled:cursor-default disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className="btn btn-primary">
         {isSignUp ? t('createAccount') : t('signIn')}
       </button>
-      <Link href={isSignUp ? '/' : '/sign-up'} className="py-2 text-accent underline">
+      <Link
+        href={isSignUp ? '/' : '/sign-up'}
+        className="py-2 text-accent underline underline-offset-4"
+      >
         {isSignUp ? t('goToSignIn') : t('goToSignUp')}
       </Link>
     </form>
@@ -100,7 +99,7 @@ function Field({
         id={id}
         required
         aria-describedby={hint ? `${id}-hint` : undefined}
-        className="mt-1 block w-full rounded-lg border border-line bg-bg px-3 py-3 text-base"
+        className="field mt-1"
       />
       {hint && (
         <p id={`${id}-hint`} className="mt-1 text-sm text-muted">

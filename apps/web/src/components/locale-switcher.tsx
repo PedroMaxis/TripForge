@@ -12,7 +12,7 @@ export function LocaleSwitcher() {
   const pathname = usePathname()
   const t = useTranslations('LocaleSwitcher')
   return (
-    <nav aria-label={t('label')} className="flex gap-4 text-sm">
+    <nav aria-label={t('label')} className="flex gap-1 text-sm">
       {routing.locales.map((locale) => (
         <Link
           key={locale}
@@ -21,7 +21,7 @@ export function LocaleSwitcher() {
           hrefLang={locale}
           lang={locale}
           aria-current={locale === current ? 'true' : undefined}
-          className="py-2 text-muted hover:text-fg aria-[current]:font-semibold aria-[current]:text-fg"
+          className="rounded-full px-3 py-2 text-ink-2 hover:bg-mist aria-[current]:bg-soft aria-[current]:text-ink"
         >
           {names[locale]}
         </Link>

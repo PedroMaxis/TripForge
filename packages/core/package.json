@@ -10,6 +10,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "fractional-indexing": "^4.0.0",
     "jose": "^6.2.18",
     "zod": "^4.6.7"
   }

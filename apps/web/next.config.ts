@@ -1,6 +1,11 @@
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+
+// The whole workspace shares one .env at the root. Variables already set win over it.
+const envFile = fileURLToPath(new URL('../../.env', import.meta.url))
+if (existsSync(envFile)) process.loadEnvFile(envFile)
 
 const config: NextConfig = {
   output: 'standalone',

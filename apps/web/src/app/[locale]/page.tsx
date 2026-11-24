@@ -11,9 +11,9 @@ export default async function LandingPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-12">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance">{t('title')}</h1>
-        <p className="mt-4 mb-8 max-w-prose text-lg text-muted">{t('body')}</p>
+      <main className="mx-auto max-w-5xl px-4 py-12">
+        <h1 className="text-5xl text-balance">{t('title')}</h1>
+        <p className="mt-4 mb-8 max-w-prose text-lg text-ink-2">{t('body')}</p>
         <AccountForm mode="signIn" />
       </main>
     </>

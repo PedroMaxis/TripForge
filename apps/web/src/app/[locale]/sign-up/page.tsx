@@ -11,8 +11,8 @@ export default async function SignUpPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-12">
-        <h1 className="mb-8 text-4xl font-semibold tracking-tight text-balance">{t('title')}</h1>
+      <main className="mx-auto max-w-5xl px-4 py-12">
+        <h1 className="mb-8 text-5xl text-balance">{t('title')}</h1>
         <AccountForm mode="signUp" />
       </main>
     </>

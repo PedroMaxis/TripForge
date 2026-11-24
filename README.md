@@ -2,7 +2,7 @@
 
 A collaborative trip planner: a group builds the itinerary day by day, together and in real time, with every stop on a map.
 
-> **Status:** foundation (phase 0). Sign-in, languages, the database schema and the authenticated realtime server are in place. Trips, the map and live editing come next.
+> **Status:** phase 1 of 4. Accounts, trips and the day-by-day itinerary work, with drag and drop, ideas, undo and view-only access. Next come the map with street routes and invites, then live editing.
 
 ## Stack
 
@@ -21,8 +21,8 @@ A collaborative trip planner: a group builds the itinerary day by day, together 
 ```
 apps/web         Next.js app
 apps/realtime    Socket.IO server
-packages/core    Domain types and the realtime token, shared by both apps
-packages/db      Drizzle schema, migrations and database client
+packages/core    Domain types, operations and the realtime token, shared by both apps
+packages/db      Drizzle schema, migrations and the only code that changes a trip
 infra            Dockerfile, Compose file and Caddyfile
 ```
 
@@ -47,6 +47,10 @@ pnpm test
 pnpm --filter @tripforge/web exec playwright install chromium   # once
 pnpm test:e2e
 ```
+
+## How a trip changes
+
+Every change is a small operation (`item.move`, `item.update`, `day.update`...). The screen applies it at once and sends it; the server locks the trip, checks the role, applies it, gives it the next revision and logs it, all in one transaction. Each operation carries an id, so a retry is never applied twice. Order inside a day is a fractional index: moving a stop changes one row, and the server separates two stops dropped on the same spot.
 
 ## How sockets are authenticated
 
