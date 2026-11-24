@@ -6,7 +6,13 @@ import { env } from './env.ts'
 
 const places = [
   ['Belo Horizonte', 'R1', -43.9386, -19.9208, { state: 'Minas Gerais', country: 'Brazil' }],
-  ['Mercado Central', 'W2', -43.943, -19.9226, { city: 'Belo Horizonte' }],
+  [
+    'Mercado Central',
+    'W2',
+    -43.943,
+    -19.9226,
+    { city: 'Belo Horizonte', osm_key: 'amenity', osm_value: 'marketplace' },
+  ],
   ['Casa do Baile', 'W3', -43.9701, -19.8545, { city: 'Belo Horizonte' }],
   ['Casa Kubitschek', 'W4', -43.9803, -19.8549, { city: 'Belo Horizonte' }],
   ['Mineirão', 'W5', -43.9711, -19.866, { city: 'Belo Horizonte' }],

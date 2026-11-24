@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "D=${NEXT_DIST_DIR:-.next}; cp -r $D/static $D/standalone/apps/web/$D/ && node --env-file-if-exists=../../.env $D/standalone/apps/web/server.js",
+    "start": "D=${NEXT_DIST_DIR:-.next}; cp -r $D/static $D/standalone/apps/web/$D/ && cp -r public $D/standalone/apps/web/ && node --env-file-if-exists=../../.env $D/standalone/apps/web/server.js",
     "typecheck": "next typegen && tsc -p .",
     "test:e2e": "playwright test"
   },

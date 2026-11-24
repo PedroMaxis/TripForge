@@ -116,6 +116,7 @@ describe('Photon results', () => {
         lat: -19.92258,
         lng: -43.94302,
         osmRef: 'W29442614',
+        kind: 'activity',
       },
     ])
   })
@@ -177,5 +178,44 @@ describe('places in operations', () => {
   })
   test('and inside the globe', () => {
     expect(update({ lat: 91, lng: 0 })).toBe(false)
+  })
+})
+
+describe('the kind of a place', () => {
+  const kindOf = (osm_key: string, osm_value: string) =>
+    parsePhoton({
+      features: [
+        {
+          geometry: { coordinates: [0, 0] },
+          properties: { osm_type: 'N', osm_id: 1, name: 'A', osm_key, osm_value },
+        },
+      ],
+    })[0]?.kind
+  test.each([
+    ['amenity', 'restaurant', 'food'],
+    ['amenity', 'marketplace', 'food'],
+    ['shop', 'bakery', 'food'],
+    ['tourism', 'hotel', 'lodging'],
+    ['aeroway', 'aerodrome', 'transport'],
+    ['railway', 'station', 'transport'],
+    ['amenity', 'bus_station', 'transport'],
+    ['tourism', 'museum', 'activity'],
+    ['leisure', 'park', 'activity'],
+    ['place', 'city', 'other'],
+    ['highway', 'residential', 'other'],
+  ])('%s=%s is %s', (key, value, kind) => {
+    expect(kindOf(key, value)).toBe(kind)
+  })
+  test('nothing known is an activity', () => {
+    expect(
+      parsePhoton({
+        features: [
+          {
+            geometry: { coordinates: [0, 0] },
+            properties: { osm_type: 'N', osm_id: 1, name: 'A' },
+          },
+        ],
+      })[0]?.kind,
+    ).toBe('activity')
   })
 })

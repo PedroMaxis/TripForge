@@ -4,7 +4,15 @@
   },
   "Landing": {
     "title": "Planeje a viagem em grupo",
-    "body": "Monte o roteiro dia a dia com seus amigos e veja cada mudança na hora."
+    "body": "Monte o roteiro dia a dia com seus amigos e veja cada mudança na hora.",
+    "imageAlt": "Um dia em Belo Horizonte no TripForge: a lista de paradas à esquerda e, no mapa, o caminho entre elas seguindo as ruas.",
+    "f1": "Todo mundo edita junto",
+    "f1b": "As mudanças aparecem na hora em todas as telas, com quem está online e no que cada um está mexendo.",
+    "f2": "O caminho entre as paradas",
+    "f2b": "Distância e tempo pelas ruas, a pé ou de carro, e um aviso quando não dá tempo de chegar.",
+    "f3": "Sem internet, sem problema",
+    "f3b": "O que você muda sem conexão fica guardado e vai depois. Se alguém mudou a mesma coisa, você escolhe.",
+    "credit": "Mapa © OpenMapTiles e OpenFreeMap, dados do OpenStreetMap. Rotas: OSRM, FOSSGIS. Relevo: Mapzen, NASA SRTM."
   },
   "Trips": {
     "title": "Minhas viagens",

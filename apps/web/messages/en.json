@@ -4,7 +4,15 @@
   },
   "Landing": {
     "title": "Plan the trip together",
-    "body": "Build the itinerary day by day with your group and see every change as it happens."
+    "body": "Build the itinerary day by day with your group and see every change as it happens.",
+    "imageAlt": "A day in Belo Horizonte on TripForge: the list of stops on the left and, on the map, the way between them following the streets.",
+    "f1": "Everyone edits at once",
+    "f1b": "Changes show up on every screen as they happen, with who is here and what they are working on.",
+    "f2": "The way between stops",
+    "f2b": "Distance and time by street, on foot or by car, and a warning when there is no time to get there.",
+    "f3": "No connection, no problem",
+    "f3b": "What you change offline is kept and sent later. If someone changed the same thing, you choose.",
+    "credit": "Map © OpenMapTiles and OpenFreeMap, data from OpenStreetMap. Routes: OSRM, FOSSGIS. Relief: Mapzen, NASA SRTM."
   },
   "Trips": {
     "title": "My trips",

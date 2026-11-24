@@ -1,13 +1,22 @@
 name: tripforge
 
+x-service: &service
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
 services:
   db:
+    <<: *service
     image: postgres:16-alpine
-    restart: unless-stopped
     environment:
       POSTGRES_USER: tripforge
       POSTGRES_DB: tripforge
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    mem_limit: 2g
     volumes:
       - db:/var/lib/postgresql/data
     healthcheck:
@@ -26,8 +35,9 @@ services:
         condition: service_healthy
 
   web:
+    <<: *service
     image: ghcr.io/pedromaxis/tripforge-web:${TAG:-latest}
-    restart: unless-stopped
+    mem_limit: 2g
     environment:
       APP_URL: ${APP_URL:?}
       DATABASE_URL: *database-url
@@ -44,8 +54,9 @@ services:
         condition: service_completed_successfully
 
   realtime:
+    <<: *service
     image: ghcr.io/pedromaxis/tripforge-server:${TAG:-latest}
-    restart: unless-stopped
+    mem_limit: 1g
     environment:
       APP_URL: ${APP_URL:?}
       DATABASE_URL: *database-url
@@ -54,9 +65,25 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  backup:
+    <<: *service
+    image: ghcr.io/pedromaxis/tripforge-backup:${TAG:-latest}
+    environment:
+      PGHOST: db
+      PGUSER: tripforge
+      PGDATABASE: tripforge
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      BACKUP_UPLOAD_URL: ${BACKUP_UPLOAD_URL:-}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
   caddy:
+    <<: *service
     image: caddy:2-alpine
-    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -73,5 +100,6 @@ services:
 
 volumes:
   db:
+  backups:
   caddy-data:
   caddy-config:

@@ -1,10 +1,18 @@
+import type { ItemKind } from './domain'
 import { byPosition } from './position'
 import type { TripItem } from './trip'
 
 export type Point = { lat: number; lng: number }
 export type TravelMode = 'foot' | 'car'
 export type Leg = { mode: TravelMode; meters: number; seconds: number; line: [number, number][] }
-export type Place = { name: string; address: string; lat: number; lng: number; osmRef: string }
+export type Place = {
+  name: string
+  address: string
+  lat: number
+  lng: number
+  osmRef: string
+  kind: ItemKind
+}
 
 const maxRouteKm = 500
 const maxWalkMeters = 2000

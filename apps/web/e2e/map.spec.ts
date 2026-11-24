@@ -113,6 +113,7 @@ test('finds a place while adding a stop', async ({ page }) => {
   await page.getByLabel('New stop').fill('mercado')
   await page.getByRole('option', { name: /Mercado Central/ }).click()
   await expect(pin(page, '1. Mercado Central')).toBeVisible()
+  await expect(stop(page, 'Mercado Central').getByRole('img', { name: 'Food' })).toBeVisible()
   await saved(page)
   await page.reload()
   await expect(pin(page, '1. Mercado Central')).toBeVisible()

@@ -2,7 +2,9 @@
 
 A collaborative trip planner: a group builds the itinerary day by day, together and in real time, with every stop on a map.
 
-> **Status:** phase 3 of 4. Friends can plan a trip together, live: itinerary, map with street routes, invites, presence, conflicts, offline edits and history. Next comes the launch: installable app, polish and deploy.
+![Two people plan the same trip: a stop added on a computer appears on a phone, and the phone's edits appear on the computer](docs/live.gif)
+
+> **Status:** ready to launch. Friends plan a trip together, live: itinerary, map with street routes, invites, presence, conflicts, offline edits and history. It can be installed on a phone.
 
 ## Stack
 
@@ -23,7 +25,7 @@ apps/web         Next.js app
 apps/realtime    Socket.IO server
 packages/core    Domain types, operations and the realtime token, shared by both apps
 packages/db      Drizzle schema, migrations and the only code that changes a trip
-infra            Dockerfile, Compose file and Caddyfile
+infra            Dockerfile, Compose file, Caddyfile, backups and the server update
 ```
 
 ## Run it locally
@@ -88,11 +90,24 @@ The web app exchanges the session cookie for a JWT that lasts five minutes (`GET
 
 ## Deploy
 
-Every push to `main` runs the checks and boots the full Compose stack on an ARM runner. If the repository variable `DEPLOY_ENABLED` is `true`, it also publishes the images to GHCR and updates the server over SSH.
+Every push to `main` runs the checks, boots the full Compose stack on an ARM runner and proves that a backup can be restored. If the repository variable `DEPLOY_ENABLED` is `true`, it also publishes the images to GHCR and updates the server over SSH.
 
-On the server, once: install Docker, open ports 80 and 443, create `/opt/tripforge` owned by the deploy user, and save `infra/.env.example` there as `.env` with real values. The GHCR packages must be public, or the server must be logged in to GHCR.
+On the server, once: install Docker, open ports 80 and 443, create `/opt/tripforge` owned by the deploy user, save `infra/.env.example` there as `.env` with real values and mode 600, and authorize a key made only for deploys.
 
-Repository secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS` (the output of `ssh-keyscan` for the host, checked against the server).
+Repository secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS` (the server's `/etc/ssh/ssh_host_ed25519_key.pub`, with the host name in front).
+
+The server reads the images with the job's own short-lived token, so nothing stays logged in.
+
+## Backups
+
+The database is saved every day at 06:00 UTC, checked, and kept for 14 days. Set `BACKUP_UPLOAD_URL` to also send each copy somewhere else with HTTP PUT; without it, copies live and die with the machine.
+
+```bash
+cd /opt/tripforge
+docker compose exec backup backup.sh                      # now
+docker compose exec backup ls /backups
+docker compose exec backup restore.sh tripforge-….dump    # replaces the database
+```
 
 ## License
 

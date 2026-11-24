@@ -14,6 +14,8 @@ const config: NextConfig = {
   outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
   transpilePackages: ['@tripforge/core', '@tripforge/db'],
   poweredByHeader: false,
+  // After a restart, what it kept on disk could be stale and send pages into a reload loop.
+  experimental: { turbopackFileSystemCacheForDev: false },
 }
 
 export default createNextIntlPlugin('./src/i18n/request.ts')(config)

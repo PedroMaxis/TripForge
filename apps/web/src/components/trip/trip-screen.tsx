@@ -372,7 +372,7 @@ export function TripScreen({
                       dayId,
                       position: positionAt(trip, dayId, list.length),
                       title,
-                      kind: 'activity',
+                      kind: place?.kind ?? 'activity',
                       ...(place && {
                         place: {
                           placeName: place.name,
