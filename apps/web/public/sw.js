@@ -1,6 +1,6 @@
 // Keeps only what is the same for everyone: built files and the offline page. Trips are private
 // and live, so they always come from the server.
-const version = 'v1'
+const version = 'v2'
 const offlinePage = '/offline.html'
 const maxFiles = 200
 

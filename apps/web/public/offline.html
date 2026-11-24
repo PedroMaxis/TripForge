@@ -52,7 +52,21 @@
         for (const el of document.querySelectorAll('[data-pt]')) el.textContent = el.dataset.pt
       }
       document.querySelector('button').onclick = () => location.reload()
-      addEventListener('online', () => location.reload())
+      // "Online" only means there is a network, so ask the app itself before loading the page again.
+      let asking = false
+      async function tryAgain() {
+        if (asking) return
+        asking = true
+        try {
+          const answer = await fetch('/api/health', { cache: 'no-store' })
+          if (answer.ok) location.reload()
+        } catch {
+          // Not yet.
+        }
+        asking = false
+      }
+      addEventListener('online', tryAgain)
+      setInterval(tryAgain, 3000)
     </script>
   </body>
 </html>
