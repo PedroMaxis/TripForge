@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t('description'),
     applicationName: 'TripForge',
     appleWebApp: { title: 'TripForge', statusBarStyle: 'default' },
-    icons: { apple: '/icons/apple-180.png' },
+    icons: { icon: '/icon.svg', apple: '/icons/apple-180.png' },
   }
 }
 

@@ -57,6 +57,15 @@ test('the stops of the day are numbered on the map', async ({ page }) => {
   await expect(pin(page, '2. Casa Kubitschek')).toBeVisible()
 })
 
+test('the map credits can be read whole', async ({ page }) => {
+  await openTrip(page, ['Casa do Baile'])
+  await expect(pin(page, '1. Casa do Baile')).toBeVisible()
+  const credits = map(page).locator('.maplibregl-ctrl-attrib')
+  const [inner, outer] = [(await credits.boundingBox())!, (await map(page).boundingBox())!]
+  expect(outer.x + outer.width - (inner.x + inner.width)).toBeGreaterThanOrEqual(10)
+  expect(inner.x - outer.x).toBeGreaterThanOrEqual(10)
+})
+
 test('the way between stops follows the streets, with its time', async ({ page }) => {
   await openTrip(page, ['Casa do Baile', 'Casa Kubitschek'])
   await expect(stop(page, 'Casa Kubitschek')).toContainText('25 min by car, 3.2 km')

@@ -168,7 +168,7 @@
 
 /* Outside the layers, which MapLibre's own styles would beat. */
 /* Clear of the rounded corner, so the credits can be read whole. */
-.maplibregl-ctrl-bottom-right {
+.maplibregl-map .maplibregl-ctrl-bottom-right {
   right: 12px;
   max-width: calc(100% - 36px);
 }

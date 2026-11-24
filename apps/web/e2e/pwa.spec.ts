@@ -15,6 +15,9 @@ test('can be installed: manifest, icons and theme', async ({ page, request }) =>
     expect(res.headers()['content-type']).toContain('image/png')
   }
   await expect(page.locator('meta[name="theme-color"]').first()).toHaveAttribute('content', /.+/)
+  const icon = await page.locator('link[rel="icon"]').first().getAttribute('href')
+  expect((await request.get(icon!)).status()).toBe(200)
+  expect((await request.get('/favicon.ico')).status()).toBe(200)
   const apple = await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')
   expect((await request.get(apple!)).status()).toBe(200)
 })
