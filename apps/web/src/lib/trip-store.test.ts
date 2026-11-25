@@ -43,6 +43,7 @@ const base: Trip = {
   members: [],
   days: [],
   items: [item('a')],
+  group: null,
 }
 const rename = (title: string, id = 'a'): Operation => ({
   type: 'item.update',

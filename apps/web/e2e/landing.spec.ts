@@ -23,13 +23,17 @@ test('says what it is and where to go', async ({ page }) => {
 })
 
 test('the relief is drawn, follows the scroll and rests when out of sight', async ({ page }) => {
+  // Without a graphics card, as in CI, every picture of the scene takes seconds.
+  test.slow()
   await page.goto('/en')
   await expect(scene(page)).toHaveAttribute('data-scene', 'ready', { timeout: 20_000 })
   const first = await page.locator('canvas').screenshot()
   await page.evaluate(() => scrollTo(0, innerHeight * 2.4))
   await expect(page.getByRole('heading', { name: 'The way, by street' })).toBeInViewport()
   await expect
-    .poll(async () => (await page.locator('canvas').screenshot()).equals(first))
+    .poll(async () => (await page.locator('canvas').screenshot()).equals(first), {
+      timeout: 30_000,
+    })
     .toBe(false)
   await page.getByRole('heading', { name: 'Start with your next trip' }).scrollIntoViewIfNeeded()
   await expect(scene(page)).toHaveAttribute('data-running', 'false')

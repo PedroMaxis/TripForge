@@ -1,4 +1,4 @@
-import type { LogEntry, OperationResult, Role } from '@tripforge/core'
+import { forViewer, type LogEntry, type OperationResult, type Role } from '@tripforge/core'
 import { and, asc, desc, eq, gt, type SQL } from 'drizzle-orm'
 import type { AnyDb } from './client'
 import { activityLog, tripMembers, trips, users } from './schema'
@@ -46,7 +46,7 @@ async function read(db: AnyDb, where: SQL | undefined, order: SQL, limit?: numbe
 const after = (tripId: string, revision: number) =>
   and(eq(activityLog.tripId, tripId), gt(activityLog.revision, revision))
 
-/** For the realtime server, which has already checked who is listening. */
+/** Everything, for the realtime server, which knows who may hear what. */
 export const entriesSince = (db: AnyDb, tripId: string, revision: number) =>
   read(db, after(tripId, revision), asc(activityLog.revision))
 
@@ -58,12 +58,16 @@ export async function getLog(
   revision: number,
   limit = logLimit,
 ) {
-  if (!(await tripAccess(db, userId, tripId))) return null
+  const access = await tripAccess(db, userId, tripId)
+  if (!access) return null
   const entries = await read(db, after(tripId, revision), asc(activityLog.revision), limit + 1)
-  return entries.length > limit ? { entries: [], reset: true } : { entries, reset: false }
+  if (entries.length > limit) return { entries: [], reset: true }
+  return { entries: access.role === 'viewer' ? entries.map(forViewer) : entries, reset: false }
 }
 
 export async function recentLog(db: AnyDb, userId: string, tripId: string, limit = logLimit) {
-  if (!(await tripAccess(db, userId, tripId))) return null
-  return read(db, eq(activityLog.tripId, tripId), desc(activityLog.revision), limit)
+  const access = await tripAccess(db, userId, tripId)
+  if (!access) return null
+  const entries = await read(db, eq(activityLog.tripId, tripId), desc(activityLog.revision), limit)
+  return access.role === 'viewer' ? entries.map(forViewer) : entries
 }

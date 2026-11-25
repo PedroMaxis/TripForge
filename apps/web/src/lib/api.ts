@@ -1,4 +1,4 @@
-import { type Trip, tripCalendar, tripLegs } from '@tripforge/core'
+import { type OperationErrorCode, type Trip, tripCalendar, tripLegs } from '@tripforge/core'
 import { findLegs, getSharedTrip, getTrip, reliefs } from '@tripforge/db'
 import { eq } from 'drizzle-orm'
 import { getSession } from './auth'
@@ -10,6 +10,12 @@ import { router } from './router'
 import { hasForecast, tripWeather } from './weather'
 
 export const fail = (error: string, status: number) => Response.json({ error }, { status })
+export const operationStatus: Record<OperationErrorCode, number> = {
+  invalid: 400,
+  forbidden: 403,
+  not_found: 404,
+  deleted: 410,
+}
 export const fresh = { 'cache-control': 'no-store' }
 
 type Allowed = { trip: Trip; denied?: undefined } | { trip?: undefined; denied: Response }

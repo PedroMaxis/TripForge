@@ -1,8 +1,8 @@
-import type { LogEntry, Presence, RealtimeUser } from '@tripforge/core'
+import type { LogEntry, Presence, RealtimeUser, Role } from '@tripforge/core'
 
 /** Where the server learns about trips. */
 export type TripSource = {
-  access: (userId: string, tripId: string) => Promise<{ revision: number } | null>
+  access: (userId: string, tripId: string) => Promise<{ revision: number; role: Role } | null>
   entriesSince: (tripId: string, revision: number) => Promise<LogEntry[]>
 }
 
@@ -12,6 +12,8 @@ type Room = { revision: number; guests: Map<string, Guest>; work: Promise<void> 
 export type RoomEvents = {
   entry: (tripId: string, entry: LogEntry) => void
   presence: (tripId: string, people: Presence[]) => void
+  /** This person has another role; called before the entry that says so. */
+  role: (tripId: string, userId: string, role: Role) => void
   /** This person may no longer hear the trip; called before the entry that says so. */
   evict: (tripId: string, userId: string) => void
 }
@@ -33,6 +35,9 @@ export function createRooms(trips: TripSource, events: RoomEvents) {
 
   async function tell(tripId: string, room: Room) {
     for (const entry of await trips.entriesSince(tripId, room.revision)) {
+      if (entry.op.type === 'member.changed' && entry.op.role !== null) {
+        events.role(tripId, entry.op.userId, entry.op.role)
+      }
       if (entry.op.type === 'member.changed' && entry.op.role === null) {
         for (const [socketId, guest] of room.guests) {
           if (guest.user.userId === entry.op.userId) room.guests.delete(socketId)
@@ -46,7 +51,7 @@ export function createRooms(trips: TripSource, events: RoomEvents) {
   }
 
   return {
-    async join(tripId: string, socketId: string, user: RealtimeUser, admit: () => void) {
+    async join(tripId: string, socketId: string, user: RealtimeUser, admit: (role: Role) => void) {
       const access = await trips.access(user.userId, tripId)
       if (!access) return null
       let room = rooms.get(tripId)
@@ -54,13 +59,15 @@ export function createRooms(trips: TripSource, events: RoomEvents) {
         room = { revision: access.revision, guests: new Map(), work: Promise.resolve() }
         rooms.set(tripId, room)
       }
-      admit()
+      admit(access.role)
       room.guests.set(socketId, { user, editing: null })
-      // Removed between the check and now? The word of it may already have gone by.
-      if (!(await trips.access(user.userId, tripId))) {
+      // Removed, or with another role, between the check and now? The word of it may already have gone by.
+      const still = await trips.access(user.userId, tripId)
+      if (!still) {
         this.leave(tripId, socketId)
         return null
       }
+      if (still.role !== access.role) admit(still.role)
       tellPresence(tripId, room)
       return access.revision
     },

@@ -17,6 +17,18 @@ export const operationTypes = [
   'day.update',
   'day.order',
   'trip.update',
+  'item.vote',
+  'item.booking',
+  'comment.create',
+  'comment.delete',
+  'attachment.added',
+  'attachment.delete',
+  'task.create',
+  'task.update',
+  'task.delete',
+  'expense.create',
+  'expense.update',
+  'expense.delete',
   'member.changed',
 ] as const
 export type OperationType = (typeof operationTypes)[number]

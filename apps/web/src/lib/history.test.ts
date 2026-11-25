@@ -79,3 +79,40 @@ test('one day only', () => {
   )
   expect(lines.map((l) => l.title)).toEqual(['b'])
 })
+
+test('tells what the group did, without votes, tasks or what is hidden', () => {
+  const withItem = {
+    ...trip,
+    items: [item('Museu')],
+    group: { expenses: [{ id: 'kept', title: 'Hotel' }] },
+  } as unknown as Trip
+  const fields = { title: 'Jantar' } as never
+  const lines = historyLines(
+    [
+      entry(9, 9, { type: 'expense.delete', expenseId: 'e' }),
+      entry(8, 8, { type: 'expense.update', expenseId: 'kept', fields: { amount: 1 } }),
+      entry(7, 7, { type: 'expense.create', expenseId: 'e', fields }),
+      entry(6, 6, { type: 'comment.create', commentId: 'c', itemId: 'Museu', body: 'x' }),
+      entry(5, 5, { type: 'item.booking', itemId: 'gone', fields: { code: 'x' } }),
+      entry(4, 4, { type: 'attachment.added', itemId: 'Museu', attachment: {} as never }),
+      entry(3, 3, { type: 'item.vote', itemId: 'Museu', on: true }),
+      entry(2, 2, { type: 'task.create', taskId: 't', list: 'todo', title: 'x' }),
+      entry(1, 1, { type: 'group.hidden' }),
+    ],
+    withItem,
+  )
+  expect(lines.map((l) => [l.key, l.title])).toEqual([
+    ['expense_delete', 'Jantar'],
+    ['expense_update', 'Hotel'],
+    ['expense_create', 'Jantar'],
+    ['comment_create', 'Museu'],
+    ['item_booking', '?'],
+    ['attachment_added', 'Museu'],
+  ])
+  expect(lines[3]?.dayId).toBe('d1')
+})
+test('autosaving a booking or an expense makes one line', () => {
+  const some = { ...trip, items: [item('a')], group: { expenses: [] } } as unknown as Trip
+  const op = { type: 'item.booking' as const, itemId: 'a', fields: { code: 'x' } }
+  expect(historyLines([entry(2, 2, op), entry(1, 1, op)], some)).toHaveLength(1)
+})

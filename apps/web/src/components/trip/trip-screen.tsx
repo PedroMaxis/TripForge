@@ -17,22 +17,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import {
-  nextStop,
-  type Operation,
-  type Place,
-  positionBetween,
-  shorterOrder,
-  type Trip,
-} from '@tripforge/core'
+import { nextStop, type Place, positionBetween, shorterOrder, type Trip } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
-import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
 import { formatDistance } from '@/lib/travel'
-import { createTripApi } from '@/lib/trip-api'
-import { createTripStore, itemsOf, type Notice, positionAt } from '@/lib/trip-store'
+import { itemsOf, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
 import type { Near } from '../place-search'
 import { AddItem } from './add-item'
@@ -45,10 +36,12 @@ import { People } from './people'
 import { Stop } from './stop'
 import { TripLinks } from './trip-links'
 import { type MapSources, TripMap } from './trip-map'
+import { Revoked, SyncStatus, Toast } from './trip-status'
 import { useArrivals } from './use-arrivals'
 import { useLegs } from './use-legs'
 import { useNow } from './use-now'
 import { useRealtime } from './use-realtime'
+import { useTripStore } from './use-trip-store'
 import { useWeather } from './use-weather'
 import { Weather } from './weather'
 
@@ -77,11 +70,8 @@ export function TripScreen({
 }) {
   const t = useTranslations('Trip')
   const locale = useLocale()
-  const [store] = useState(() =>
-    createTripStore(initial, userId, createTripApi(initial.id, userId)),
-  )
-  const { trip, sync, undo, notice, conflicts, revoked, start, watch, settle, dispatch, dismiss } =
-    useStore(store)
+  const { store, trip, sync, undo, notice, conflicts, revoked, watch, settle, dispatch, catchUp } =
+    useTripStore(initial, userId)
   const [dayId, setDayId] = useState(initialDayId)
   const [openId, setOpenId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -95,7 +85,6 @@ export function TripScreen({
   const list = itemsOf(trip, dayId)
   const dragging = trip.items.find((i) => i.id === draggingId)
 
-  useEffect(() => start(), [start])
   useEffect(() => watch(openId), [watch, openId])
   const present = useRealtime({
     tripId: trip.id,
@@ -125,24 +114,19 @@ export function TripScreen({
   const hasMap = near !== null || trip.items.some((i) => i.lat !== null)
 
   const { arrivals, total } = useArrivals(list, day !== null, legs)
+  const tools = trip.group && {
+    tripId: trip.id,
+    group: trip.group,
+    userId,
+    isOwner: trip.role === 'owner',
+    timezone: trip.timezone,
+    dispatch,
+    onUploaded: () => void catchUp(),
+  }
   const shorter = useMemo(
     () => (canEdit && dayId ? shorterOrder(itemsOf(trip, dayId)) : null),
     [canEdit, trip, dayId],
   )
-
-  useEffect(() => {
-    if (!undo && !notice) return
-    const timer = setTimeout(dismiss, 7000)
-    return () => clearTimeout(timer)
-  }, [undo, notice, dismiss])
-
-  useEffect(() => {
-    // Without connection the changes are kept on the device, so leaving is safe.
-    if (sync !== 'saving') return
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
-    addEventListener('beforeunload', warn)
-    return () => removeEventListener('beforeunload', warn)
-  }, [sync])
 
   function choose(next: string | null) {
     setDayId(next)
@@ -207,36 +191,7 @@ export function TripScreen({
     if (index >= 0 && over.id !== active.id) move(itemId, dayId, index)
   }
 
-  const undoOp: Operation | null = undo
-    ? undo.op
-    : notice?.kind === 'deletedByOther' && canEdit
-      ? { type: 'item.restore', itemId: notice.itemId }
-      : null
-
-  function noticeText(current: Notice) {
-    switch (current.kind) {
-      case 'rejected':
-        return t('rejected')
-      case 'deletedByOther':
-        return current.userName
-          ? t('deletedBy', { title: current.title, name: current.userName })
-          : t('deleted', { title: current.title })
-      case 'overwritten':
-        return t('overwritten', { title: current.title, name: current.userName })
-    }
-  }
-
-  if (revoked) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-16">
-        <h1 className="text-4xl">{t('revoked')}</h1>
-        <p className="mt-4 mb-8 text-ink-2">{t('revokedBody')}</p>
-        <Link href="/trips" className="btn">
-          {t('myTrips')}
-        </Link>
-      </main>
-    )
-  }
+  if (revoked) return <Revoked />
 
   const dayName = (index: number) =>
     trip.days[index]?.title ?? t('dayNumber', { number: index + 1 })
@@ -262,26 +217,7 @@ export function TripScreen({
       >
         <header className="col-span-full flex items-center gap-3 px-4 py-2 md:gap-6 md:px-6">
           <Logo compact />
-          <span
-            data-testid="sync"
-            data-state={sync}
-            role="status"
-            className={
-              sync === 'offline' || sync === 'signedOut'
-                ? 'min-w-0 rounded-full bg-warm px-3 py-1 text-sm'
-                : 'text-sm text-muted max-sm:sr-only'
-            }
-          >
-            {canEdit ? t(sync) : null}
-            {sync === 'signedOut' && (
-              <>
-                {' '}
-                <Link href="/sign-in" className="font-bold underline underline-offset-4">
-                  {t('signIn')}
-                </Link>
-              </>
-            )}
-          </span>
+          <SyncStatus sync={sync} quiet={!canEdit} />
           <div className="ml-auto flex items-center gap-3">
             {!canEdit && (
               <span className="rounded-full bg-soft px-3 py-1 text-sm whitespace-nowrap">
@@ -341,6 +277,16 @@ export function TripScreen({
                 <People members={trip.members} online={online} />
               </div>
             </Cover>
+            {trip.group && (
+              <nav aria-label={t('group')} className="flex gap-2 px-2 pt-3">
+                <Link href={`${page}/money`} className="btn">
+                  {t('money')}
+                </Link>
+                <Link href={`${page}/lists`} className="btn">
+                  {t('lists')}
+                </Link>
+              </nav>
+            )}
             {now && next && (
               <NextStop
                 item={next}
@@ -443,6 +389,7 @@ export function TripScreen({
                       travel={arrivals[index]?.travel ?? null}
                       late={arrivals[index]?.late ?? null}
                       near={near}
+                      tools={tools}
                       days={trip.days}
                       dayName={dayName}
                       open={openId === item.id}
@@ -492,27 +439,7 @@ export function TripScreen({
         )}
       </DragOverlay>
 
-      <div
-        role="status"
-        className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:bottom-36"
-      >
-        {(undo || notice) && (
-          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-3xl bg-ink py-1 pr-1 pl-5 text-sm text-paper">
-            <span className="min-w-0 py-2 pr-3 [overflow-wrap:anywhere]">
-              {undo ? t(undo.kind, { title: undo.title }) : notice && noticeText(notice)}
-            </span>
-            {undoOp && (
-              <button
-                type="button"
-                onClick={() => dispatch(undoOp)}
-                className="min-h-10 shrink-0 rounded-full bg-paper px-4 font-bold text-ink hover:bg-soft focus-visible:outline-paper"
-              >
-                {t('undo')}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      <Toast undo={undo} notice={notice} canEdit={canEdit} dispatch={dispatch} />
     </DndContext>
   )
 }

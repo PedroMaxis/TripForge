@@ -16,6 +16,7 @@ import type { Near } from '../place-search'
 import { AutoField } from './auto-field'
 import { GoLinks } from './go-links'
 import { PlaceField } from './place-field'
+import { type GroupTools, StopGroup } from './stop-group'
 
 type Fields = Extract<Operation, { type: 'item.update' }>['fields']
 
@@ -40,6 +41,8 @@ type Props = {
   /** Why it cannot be reached on time, already in words. */
   late: string | null
   near: Near
+  /** What the group keeps about it; null for who only looks. */
+  tools: GroupTools | null
   dayName: (index: number) => string
   open: boolean
   canEdit: boolean
@@ -50,7 +53,7 @@ type Props = {
 }
 
 export function Stop(props: Props) {
-  const { item, number, editor, travel, late, open, canEdit, onToggle } = props
+  const { item, number, editor, travel, late, tools, open, canEdit, onToggle } = props
   const t = useTranslations('Trip')
   const {
     setNodeRef,
@@ -111,8 +114,10 @@ export function Stop(props: Props) {
               {t('editing', { name: editor })}
             </span>
           )}
+          {tools && <Kept item={item} group={tools.group} />}
           {travel && <span className="block text-sm text-muted tabular-nums">{travel}</span>}
         </button>
+        {tools && number === null && <VoteButton item={item} tools={tools} />}
         <span title={t(`kinds.${item.kind}`)} className="shrink-0 text-muted">
           <svg
             width="24"
@@ -152,6 +157,47 @@ export function Stop(props: Props) {
   )
 }
 
+/** How much the group has kept about it. */
+function Kept({ item, group }: { item: TripItem; group: GroupTools['group'] }) {
+  const t = useTranslations('Group')
+  const about = <T extends { itemId: string }>(list: T[]) =>
+    list.filter((x) => x.itemId === item.id).length
+  const booked = group.bookings.some((b) => b.itemId === item.id && (b.code || b.details))
+  const files = about(group.attachments)
+  const comments = about(group.comments)
+  const parts = [
+    booked && t('booked'),
+    files > 0 && t('files', { count: files }),
+    comments > 0 && t('comments', { count: comments }),
+  ].filter(Boolean)
+  if (parts.length === 0) return null
+  return <span className="block text-sm text-muted">{parts.join(', ')}</span>
+}
+
+function VoteButton({ item, tools }: { item: TripItem; tools: GroupTools }) {
+  const t = useTranslations('Group')
+  const { group, userId, dispatch } = tools
+  const votes = group.votes.filter((v) => v.itemId === item.id)
+  const own = votes.some((v) => v.userId === userId)
+  return (
+    <button
+      type="button"
+      aria-pressed={own}
+      aria-label={t('vote', { title: item.title, count: votes.length })}
+      title={votes.map((v) => group.people[v.userId]).join(', ') || undefined}
+      onClick={() => dispatch({ type: 'item.vote', itemId: item.id, on: !own })}
+      className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-bold tabular-nums ${
+        own ? 'bg-accent text-accent-ink' : 'bg-soft hover:bg-line'
+      }`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 21C5 15.5 2 12 2 8a5 5 0 0 1 10-1.5A5 5 0 0 1 22 8c0 4-3 7.5-10 13z" />
+      </svg>
+      {votes.length}
+    </button>
+  )
+}
+
 function StopDetails({ item }: { item: TripItem }) {
   return (
     <div className="grid gap-2 px-4 pb-5 pl-[3.75rem]">
@@ -162,7 +208,7 @@ function StopDetails({ item }: { item: TripItem }) {
   )
 }
 
-function StopForm({ item, days, dayName, near, onSave, onMove, onDelete }: Props) {
+function StopForm({ item, days, dayName, near, tools, onSave, onMove, onDelete }: Props) {
   const t = useTranslations('Trip')
   const locale = useLocale()
   const id = useId()
@@ -258,6 +304,7 @@ function StopForm({ item, days, dayName, near, onSave, onMove, onDelete }: Props
         </select>
       </div>
       {text('notes', t('notes'), 5000)}
+      {tools && <StopGroup item={item} tools={tools} />}
       <div className="flex flex-wrap gap-2 sm:col-span-2">
         <GoLinks item={item} />
         {item.dayId && (

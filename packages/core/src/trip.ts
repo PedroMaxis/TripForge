@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { daysApart, isDate } from './dates'
 import type { ItemKind, Role } from './domain'
+import type { TripGroup } from './group'
 
 export const maxTripDays = 90
 
@@ -84,4 +85,6 @@ export type Trip = TripSummary & {
   role: Role
   days: TripDay[]
   items: TripItem[]
+  /** Null for who only looks. */
+  group: TripGroup | null
 }

@@ -17,7 +17,7 @@ import { itemsOf } from './trip-items'
 export { itemsOf }
 
 export type SyncState = 'saved' | 'saving' | 'offline' | 'signedOut'
-export type Undo = { kind: 'moved' | 'deleted' | 'ordered'; title: string; op: Operation }
+export type Undo = { kind: 'moved' | 'deleted' | 'ordered' | 'paid'; title: string; op: Operation }
 export type Notice =
   | { kind: 'rejected' }
   | { kind: 'deletedByOther'; itemId: string; title: string; userName: string }
@@ -85,8 +85,10 @@ export function createTripStore(initial: Trip, userId: string, api: TripApi) {
   let watching: string | null = null
 
   return createStore<TripStore>()((set, get) => {
+    const me = () => ({ userId, at: new Date().toISOString() })
+
     function show(extra: Partial<TripStore> = {}) {
-      const trip = queue.reduce((current, { op }) => applyLocally(current, op), confirmed)
+      const trip = queue.reduce((current, { op }) => applyLocally(current, op, me()), confirmed)
       // The last change may be confirmed by what others tell us rather than by its own answer.
       const done = queue.length === 0 && !sending && get().sync === 'saving'
       set({ trip, ...(done && { sync: 'saved' as const }), ...extra })
@@ -174,7 +176,7 @@ export function createTripStore(initial: Trip, userId: string, api: TripApi) {
         await catchUp()
         return
       }
-      confirmed = { ...applyLocally(confirmed, op), revision: result.revision }
+      confirmed = { ...applyLocally(confirmed, op, me()), revision: result.revision }
       if (result.item && op.type !== 'item.delete') confirmed = withItem(confirmed, result.item)
       drop(opId)
     }

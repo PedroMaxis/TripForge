@@ -5,6 +5,7 @@ import {
   changeMember,
   createTrip,
   entriesSince,
+  getTrip,
   tripAccess,
   tripMembers,
   users,
@@ -120,8 +121,11 @@ test('someone removed while joining does not get in', async () => {
   let admitted = false
   const told: string[] = []
   const rooms = createRooms(
-    { access: async () => (calls++ === 0 ? { revision: 0 } : null), entriesSince: async () => [] },
-    { entry: () => {}, evict: () => {}, presence: (id) => told.push(id) },
+    {
+      access: async () => (calls++ === 0 ? { revision: 0, role: 'editor' as const } : null),
+      entriesSince: async () => [],
+    },
+    { entry: () => {}, role: () => {}, evict: () => {}, presence: (id) => told.push(id) },
   )
   const joined = await rooms.join('t', 's', { userId: 'u', name: 'u', image: null }, () => {
     admitted = true
@@ -225,5 +229,54 @@ describe('presence', () => {
     s.socket.emit('trip.editing', { tripId, itemId: randomUUID() })
     await new Promise((r) => setTimeout(r, 100))
     expect(a.presence().map((p) => p.userId)).toEqual(['owner'])
+  })
+})
+
+describe('what is only for the group', () => {
+  const say = async (body: string) => {
+    const trip = await getTrip(t.db, 'owner', tripId)
+    await write({
+      type: 'comment.create',
+      commentId: randomUUID(),
+      itemId: trip!.items[0]!.id,
+      body,
+    })
+  }
+  beforeEach(async () => {
+    await write(create('A'))
+    await t.db.insert(tripMembers).values({ tripId, userId: 'stranger', role: 'viewer' })
+  })
+  const types = (s: { entries: LogEntry[] }) => s.entries.map((e) => e.op.type)
+
+  test('reaches who plans the trip, and others only learn the revision', async () => {
+    const [planner, viewer] = [await connect('ana'), await connect('stranger')]
+    await planner.join()
+    await viewer.join()
+    await say('segredo')
+    await expect.poll(() => types(planner)).toEqual(['comment.create'])
+    await expect.poll(() => types(viewer)).toEqual(['group.hidden'])
+    expect(JSON.stringify(viewer.entries)).not.toMatch(/segredo|owner/)
+    expect(viewer.entries[0]!.revision).toBe(planner.entries[0]!.revision)
+  })
+  test('follows a change of role, both ways', async () => {
+    const [a, b] = [await connect('ana'), await connect('stranger')]
+    await a.join()
+    await b.join()
+    await changeMember(t.db, 'owner', tripId, 'ana', 'viewer')
+    await changeMember(t.db, 'owner', tripId, 'stranger', 'editor')
+    server.notify(tripId)
+    await say('segredo')
+    const changes = ['member.changed', 'member.changed']
+    await expect.poll(() => types(a)).toEqual([...changes, 'group.hidden'])
+    await expect.poll(() => types(b)).toEqual([...changes, 'comment.create'])
+  })
+  test('stops with leaving', async () => {
+    const a = await connect('ana')
+    await a.join()
+    a.socket.emit('trip.leave', { tripId })
+    await new Promise((r) => setTimeout(r, 50))
+    await say('x')
+    await new Promise((r) => setTimeout(r, 100))
+    expect(a.entries).toEqual([])
   })
 })

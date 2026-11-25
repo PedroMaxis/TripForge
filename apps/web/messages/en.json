@@ -177,7 +177,11 @@
     "backToTrip": "Back to the trip",
     "duplicate": "Duplicate",
     "shorten": "Shorten the way by about {distance}",
-    "ordered": "{title} is in a new order"
+    "ordered": "{title} is in a new order",
+    "money": "Expenses",
+    "lists": "Lists",
+    "group": "Group",
+    "paid": "{title} marked as paid"
   },
   "Map": {
     "label": "Trip map",
@@ -278,7 +282,13 @@
       "left": "{name} left",
       "removed": "{name} removed {other}",
       "role": "{name} changed the role of {other}",
-      "day_order": "{name} put {day} in a new order"
+      "day_order": "{name} put {day} in a new order",
+      "item_booking": "{name} edited the booking of {title}",
+      "comment_create": "{name} commented on {title}",
+      "attachment_added": "{name} added a file to {title}",
+      "expense_create": "{name} added the expense {title}",
+      "expense_update": "{name} edited the expense {title}",
+      "expense_delete": "{name} deleted the expense {title}"
     }
   },
   "SignIn": {
@@ -294,7 +304,8 @@
       "rain": "Rain",
       "storm": "Storm",
       "snow": "Snow"
-    }
+    },
+    "one": "{min} °C"
   },
   "Duplicate": {
     "title": "Duplicate trip",
@@ -302,5 +313,87 @@
     "copyOf": "{title} (copy)",
     "create": "Create the copy",
     "failed": "Give it a name and a real date."
+  },
+  "Group": {
+    "booking": "Booking",
+    "booked": "Booked",
+    "code": "Booking code",
+    "details": "Details",
+    "files": "{count, plural, =0 {Files} one {# file} other {# files}}",
+    "comments": "{count, plural, =0 {Comments} one {# comment} other {# comments}}",
+    "private": "Only people who edit this trip see the booking, files and comments.",
+    "addFile": "Add a PDF or a picture, up to 5 MB",
+    "sending": "Sending…",
+    "removeFile": "Remove {name}",
+    "uploadErrors": {
+      "bad_type": "Only PDF, JPG, PNG and WebP files.",
+      "too_large": "This file is over 5 MB.",
+      "full": "There is no more room for files on this trip.",
+      "failed": "The file was not sent. Try again."
+    },
+    "you": "You",
+    "newComment": "New comment",
+    "sendComment": "Comment",
+    "removeComment": "Remove",
+    "vote": "Vote for {title}, {count, plural, =0 {no votes} one {# vote} other {# votes}}",
+    "editorsOnly": "Only people who edit this trip see this"
+  },
+  "Lists": {
+    "title": "Lists",
+    "lists": {
+      "todo": "To do",
+      "pack": "To pack"
+    },
+    "empty": {
+      "todo": "Nothing to do yet.",
+      "pack": "Nothing to pack yet."
+    },
+    "progress": "{done} of {count} done",
+    "add": {
+      "todo": "New task",
+      "pack": "New thing to pack"
+    },
+    "addButton": "Add",
+    "done": "{title}, done",
+    "rename": "Name",
+    "assignee": "Who takes care of {title}",
+    "anyone": "Anyone",
+    "remove": "Remove {title}"
+  },
+  "Money": {
+    "title": "Expenses",
+    "you": "You",
+    "toYou": "you",
+    "total": "Total",
+    "yourPart": "Your part",
+    "owedToYou": "You get back",
+    "youOwe": "You owe",
+    "settle": "To settle up",
+    "settled": "All settled.",
+    "nothingYet": "Nothing to settle yet.",
+    "pays": "{from} pays {to} {amount}",
+    "youPay": "You pay {to} {amount}",
+    "markPaid": "Mark as paid",
+    "payment": "Payment",
+    "paymentLine": "{from} paid {to}",
+    "line": "{name} paid, for {who}",
+    "add": "Add expense",
+    "emptyTitle": "No expenses yet",
+    "emptyBody": "Write down who paid for what, and TripForge works out who owes whom.",
+    "what": "What was it?",
+    "amount": "Amount",
+    "currency": "Currency",
+    "date": "Date",
+    "paidBy": "Paid by",
+    "splitBetween": "Split equally between",
+    "save": "Save",
+    "cancel": "Cancel",
+    "remove": "Delete",
+    "errors": {
+      "title": "Say what it was.",
+      "amount": "Write an amount, such as 12.50.",
+      "split": "Choose at least one person.",
+      "date": "Choose a date."
+    }
   }
 }

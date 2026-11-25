@@ -193,6 +193,7 @@ export function SharedTrip({
                   late={null}
                   editor={null}
                   near={null}
+                  tools={null}
                   days={trip.days}
                   dayName={dayName}
                   open={openId === item.id}

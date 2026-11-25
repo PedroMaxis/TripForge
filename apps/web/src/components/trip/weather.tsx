@@ -36,7 +36,8 @@ export function Weather({ weather }: { weather: DayWeather | undefined }) {
         <path d={icons[weather.kind]} />
       </svg>
       <span className="tabular-nums">
-        {t(`kinds.${weather.kind}`)}, {t('range', { min: weather.min, max: weather.max })}
+        {t(`kinds.${weather.kind}`)},{' '}
+        {t(weather.min === weather.max ? 'one' : 'range', { min: weather.min, max: weather.max })}
       </span>
       <a
         href="https://www.met.no/"

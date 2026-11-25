@@ -177,7 +177,11 @@
     "backToTrip": "Voltar pra viagem",
     "duplicate": "Duplicar",
     "shorten": "Encurtar o caminho em cerca de {distance}",
-    "ordered": "{title} está em nova ordem"
+    "ordered": "{title} está em nova ordem",
+    "money": "Gastos",
+    "lists": "Listas",
+    "group": "Grupo",
+    "paid": "{title} marcado como pago"
   },
   "Map": {
     "label": "Mapa da viagem",
@@ -278,7 +282,13 @@
       "left": "{name} saiu",
       "removed": "{name} removeu {other}",
       "role": "{name} mudou o papel de {other}",
-      "day_order": "{name} pôs {day} em nova ordem"
+      "day_order": "{name} pôs {day} em nova ordem",
+      "item_booking": "{name} editou a reserva de {title}",
+      "comment_create": "{name} comentou em {title}",
+      "attachment_added": "{name} anexou um arquivo em {title}",
+      "expense_create": "{name} adicionou o gasto {title}",
+      "expense_update": "{name} editou o gasto {title}",
+      "expense_delete": "{name} excluiu o gasto {title}"
     }
   },
   "SignIn": {
@@ -294,7 +304,8 @@
       "rain": "Chuva",
       "storm": "Tempestade",
       "snow": "Neve"
-    }
+    },
+    "one": "{min} °C"
   },
   "Duplicate": {
     "title": "Duplicar viagem",
@@ -302,5 +313,87 @@
     "copyOf": "{title} (cópia)",
     "create": "Criar a cópia",
     "failed": "Dê um nome e uma data que exista."
+  },
+  "Group": {
+    "booking": "Reserva",
+    "booked": "Reservado",
+    "code": "Código da reserva",
+    "details": "Detalhes",
+    "files": "{count, plural, =0 {Anexos} one {# anexo} other {# anexos}}",
+    "comments": "{count, plural, =0 {Comentários} one {# comentário} other {# comentários}}",
+    "private": "Só quem edita a viagem vê a reserva, os anexos e os comentários.",
+    "addFile": "Adicionar um PDF ou uma imagem, até 5 MB",
+    "sending": "Enviando…",
+    "removeFile": "Remover {name}",
+    "uploadErrors": {
+      "bad_type": "Só arquivos PDF, JPG, PNG e WebP.",
+      "too_large": "Este arquivo passa de 5 MB.",
+      "full": "Não cabem mais anexos nesta viagem.",
+      "failed": "O arquivo não foi enviado. Tente de novo."
+    },
+    "you": "Você",
+    "newComment": "Novo comentário",
+    "sendComment": "Comentar",
+    "removeComment": "Remover",
+    "vote": "Votar em {title}, {count, plural, =0 {sem votos} one {# voto} other {# votos}}",
+    "editorsOnly": "Só quem edita a viagem vê esta página"
+  },
+  "Lists": {
+    "title": "Listas",
+    "lists": {
+      "todo": "Tarefas",
+      "pack": "Mala"
+    },
+    "empty": {
+      "todo": "Nenhuma tarefa ainda.",
+      "pack": "Nada pra levar ainda."
+    },
+    "progress": "{done} de {count} prontas",
+    "add": {
+      "todo": "Nova tarefa",
+      "pack": "Novo item da mala"
+    },
+    "addButton": "Adicionar",
+    "done": "{title}, pronto",
+    "rename": "Nome",
+    "assignee": "Quem cuida de {title}",
+    "anyone": "Qualquer pessoa",
+    "remove": "Remover {title}"
+  },
+  "Money": {
+    "title": "Gastos",
+    "you": "Você",
+    "toYou": "você",
+    "total": "Total",
+    "yourPart": "Sua parte",
+    "owedToYou": "Você recebe",
+    "youOwe": "Você deve",
+    "settle": "Acerto de contas",
+    "settled": "Tudo acertado.",
+    "nothingYet": "Nada pra acertar ainda.",
+    "pays": "{from} paga {amount} pra {to}",
+    "youPay": "Você paga {amount} pra {to}",
+    "markPaid": "Marcar como pago",
+    "payment": "Pagamento",
+    "paymentLine": "{from} pagou pra {to}",
+    "line": "{name} pagou, por {who}",
+    "add": "Adicionar gasto",
+    "emptyTitle": "Nenhum gasto ainda",
+    "emptyBody": "Anote quem pagou o quê, e o TripForge calcula quem deve pra quem.",
+    "what": "O que foi?",
+    "amount": "Valor",
+    "currency": "Moeda",
+    "date": "Data",
+    "paidBy": "Quem pagou",
+    "splitBetween": "Dividir igualmente entre",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "remove": "Excluir",
+    "errors": {
+      "title": "Diga o que foi.",
+      "amount": "Escreva um valor, como 12,50.",
+      "split": "Escolha pelo menos uma pessoa.",
+      "date": "Escolha uma data."
+    }
   }
 }

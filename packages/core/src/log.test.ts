@@ -34,6 +34,7 @@ const trip: Trip = {
   members: [],
   days: [{ id: 'd1', date: '2027-03-04', title: null, notes: null }],
   items: [item],
+  group: null,
 }
 const entry = (over: Partial<LogEntry>): LogEntry => ({
   revision: 4,

@@ -5,9 +5,11 @@ import {
   operationTypes,
   roles,
   type TravelMode,
+  taskLists,
 } from '@tripforge/core'
 import { sql } from 'drizzle-orm'
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -31,10 +33,13 @@ import {
 export const localeEnum = pgEnum('locale', locales)
 export const roleEnum = pgEnum('role', roles)
 export const itemKindEnum = pgEnum('item_kind', itemKinds)
+export const taskListEnum = pgEnum('task_list', taskLists)
 export const operationTypeEnum = pgEnum('operation_type', operationTypes)
 
 /** Fractional-index key. The "C" collation makes Postgres sort it exactly like JavaScript does. */
 const positionKey = customType<{ data: string }>({ dataType: () => 'text COLLATE "C"' })
+
+const bytea = customType<{ data: Uint8Array }>({ dataType: () => 'bytea' })
 
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true })
 const createdAt = () => timestamptz('created_at').notNull().defaultNow()
@@ -242,6 +247,98 @@ export const items = pgTable(
         and ${t.lat} between -90 and 90
         and ${t.lng} between -180 and 180`,
     ),
+  ],
+)
+
+// --- Only for the people who plan the trip -----------------------------------
+
+const ofItem = () =>
+  uuid('item_id')
+    .notNull()
+    .references(() => items.id, { onDelete: 'cascade' })
+const ofTrip = () =>
+  uuid('trip_id')
+    .notNull()
+    .references(() => trips.id, { onDelete: 'cascade' })
+const byUser = (name = 'user_id') =>
+  text(name)
+    .notNull()
+    .references(() => users.id)
+
+export const itemVotes = pgTable('item_votes', { itemId: ofItem(), userId: byUser() }, (t) => [
+  primaryKey({ columns: [t.itemId, t.userId] }),
+])
+
+export const bookings = pgTable('bookings', {
+  itemId: ofItem().primaryKey(),
+  code: text('code'),
+  details: text('details'),
+})
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    itemId: ofItem(),
+    userId: byUser(),
+    body: text('body').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('comments_item_id_idx').on(t.itemId)],
+)
+
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tripId: ofTrip(),
+    itemId: ofItem(),
+    userId: byUser(),
+    name: text('name').notNull(),
+    type: text('type').notNull(),
+    size: integer('size').notNull(),
+    data: bytea('data').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index('attachments_trip_id_idx').on(t.tripId),
+    index('attachments_user_id_idx').on(t.userId),
+  ],
+)
+
+export const tasks = pgTable(
+  'tasks',
+  {
+    id: uuid('id').primaryKey(),
+    tripId: ofTrip(),
+    list: taskListEnum('list').notNull(),
+    title: text('title').notNull(),
+    done: boolean('done').notNull().default(false),
+    assigneeId: text('assignee_id').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('tasks_trip_id_idx').on(t.tripId)],
+)
+
+export const expenses = pgTable(
+  'expenses',
+  {
+    id: uuid('id').primaryKey(),
+    tripId: ofTrip(),
+    title: text('title').notNull(),
+    /** In the smallest unit of the currency. */
+    amount: bigint('amount', { mode: 'number' }).notNull(),
+    currency: text('currency').notNull(),
+    paidBy: byUser('paid_by'),
+    split: text('split').array().notNull(),
+    date: date('date').notNull(),
+    payment: boolean('payment').notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index('expenses_trip_id_idx').on(t.tripId),
+    check('expenses_amount_check', sql`${t.amount} > 0`),
+    check('expenses_split_check', sql`cardinality(${t.split}) > 0`),
   ],
 )
 

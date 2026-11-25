@@ -1,3 +1,4 @@
+import { type Author, applyToGroup, isGroupOperation } from './group'
 import type { Operation } from './operations'
 import { byPosition } from './position'
 import type { Trip, TripItem } from './trip'
@@ -11,11 +12,16 @@ const defined = <T extends object>(fields: T) =>
     [K in keyof T]: Exclude<T[K], undefined>
   }
 
+const nobody: Author = { userId: '', at: '' }
+
 /**
  * What an operation will look like once the server accepts it. Anything that only the server
  * knows, such as the days after a date change or a restored item, arrives with its answer.
  */
-export function applyLocally(trip: Trip, op: Operation): Trip {
+export function applyLocally(trip: Trip, op: Operation, by: Author = nobody): Trip {
+  if (isGroupOperation(op)) {
+    return trip.group ? { ...trip, group: applyToGroup(trip.group, op, by) } : trip
+  }
   switch (op.type) {
     case 'trip.update': {
       const { archived: _, ...fields } = op.fields

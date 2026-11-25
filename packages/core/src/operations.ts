@@ -1,5 +1,7 @@
 import { z } from 'zod'
+import { isDate } from './dates'
 import { itemKinds } from './domain'
+import { taskLists } from './group'
 import { isPosition } from './position'
 import { arePaired, coordinates, tripFields, tripPlaceFields } from './trip'
 
@@ -27,6 +29,21 @@ const itemFields = {
   osmRef: text(40),
   notes: text(5000),
   done: z.boolean(),
+}
+
+const personId = z.string().min(1).max(64)
+const expenseFields = {
+  title: itemFields.title,
+  amount: z.int().positive().max(100_000_000_000),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  paidBy: personId,
+  split: z
+    .array(personId)
+    .min(1)
+    .max(100)
+    .refine((list) => new Set(list).size === list.length),
+  date: z.string().refine(isDate),
+  payment: z.boolean(),
 }
 
 export const operationSchema = z.discriminatedUnion('type', [
@@ -85,6 +102,53 @@ export const operationSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('item.move'), itemId: id, dayId: id.nullable(), position }),
   z.strictObject({ type: z.literal('item.delete'), itemId: id }),
   z.strictObject({ type: z.literal('item.restore'), itemId: id }),
+  z.strictObject({ type: z.literal('item.vote'), itemId: id, on: z.boolean() }),
+  z.strictObject({
+    type: z.literal('item.booking'),
+    itemId: id,
+    fields: z
+      .strictObject({ code: text(120), details: text(2000) })
+      .partial()
+      .refine(notEmpty),
+  }),
+  z.strictObject({
+    type: z.literal('comment.create'),
+    commentId: id,
+    itemId: id,
+    body: z.string().trim().min(1).max(2000),
+  }),
+  z.strictObject({ type: z.literal('comment.delete'), commentId: id }),
+  z.strictObject({ type: z.literal('attachment.delete'), attachmentId: id }),
+  z.strictObject({
+    type: z.literal('task.create'),
+    taskId: id,
+    list: z.enum(taskLists),
+    title: itemFields.title,
+  }),
+  z.strictObject({
+    type: z.literal('task.update'),
+    taskId: id,
+    fields: z
+      .strictObject({
+        title: itemFields.title,
+        done: z.boolean(),
+        assigneeId: personId.nullable(),
+      })
+      .partial()
+      .refine(notEmpty),
+  }),
+  z.strictObject({ type: z.literal('task.delete'), taskId: id }),
+  z.strictObject({
+    type: z.literal('expense.create'),
+    expenseId: id,
+    fields: z.strictObject(expenseFields),
+  }),
+  z.strictObject({
+    type: z.literal('expense.update'),
+    expenseId: id,
+    fields: z.strictObject(expenseFields).partial().refine(notEmpty),
+  }),
+  z.strictObject({ type: z.literal('expense.delete'), expenseId: id }),
 ])
 
 export type Operation = z.infer<typeof operationSchema>

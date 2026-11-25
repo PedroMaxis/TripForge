@@ -38,6 +38,7 @@ const trip: Trip = {
     { id: 'd2', date: '2027-03-05', title: null, notes: null },
   ],
   items: [item('a'), item('b', { position: 'a1' })],
+  group: null,
 }
 
 test('creates an item in its place and leaves the original trip alone', () => {

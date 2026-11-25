@@ -1,8 +1,8 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { parseDate, type Role, type Trip } from '@tripforge/core'
 import { and, asc, eq, gt, isNull } from 'drizzle-orm'
+import { OperationError, record, type Tx } from './change'
 import type { AnyDb } from './client'
-import { OperationError, record, type Tx } from './operations'
 import { invites, tripMembers, trips, users } from './schema'
 import { getTripForGuest } from './trips'
 

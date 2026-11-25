@@ -1,9 +1,11 @@
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import {
+  forViewer,
   type LogEntry,
   type Presence,
   type RealtimeUser,
+  type Role,
   verifyRealtimeToken,
 } from '@tripforge/core'
 import { Server } from 'socket.io'
@@ -39,6 +41,8 @@ export type RealtimeServer = {
 }
 
 const roomOf = (tripId: string) => `trip:${tripId}`
+/** Those of them who plan the trip, and may hear everything. */
+const groupOf = (tripId: string) => `trip:${tripId}:group`
 
 export async function startServer({
   port,
@@ -65,15 +69,39 @@ export async function startServer({
     maxHttpBufferSize: 10_000,
   })
 
+  type TripSocket = Parameters<Parameters<typeof io.use>[0]>[0]
+
+  function enter(socket: TripSocket, tripId: string, role: Role) {
+    socket.join(roomOf(tripId))
+    if (role === 'viewer') socket.leave(groupOf(tripId))
+    else socket.join(groupOf(tripId))
+  }
+  function exit(socket: TripSocket, tripId: string) {
+    socket.leave(roomOf(tripId))
+    socket.leave(groupOf(tripId))
+  }
+  const socketsOf = (tripId: string, userId: string) =>
+    [...(io.of('/').adapter.rooms.get(roomOf(tripId)) ?? [])].flatMap((id) => {
+      const socket = io.sockets.sockets.get(id)
+      return socket?.data.user.userId === userId ? [socket] : []
+    })
+
   // Each process tells only its own sockets, so several can listen to the same database.
   const rooms = createRooms(trips, {
-    entry: (tripId, entry) => io.local.to(roomOf(tripId)).emit('trip.entry', tripId, entry),
+    entry: (tripId, entry) => {
+      io.local.to(groupOf(tripId)).emit('trip.entry', tripId, entry)
+      io.local
+        .to(roomOf(tripId))
+        .except(groupOf(tripId))
+        .emit('trip.entry', tripId, forViewer(entry))
+    },
+    role: (tripId, userId, role) => {
+      for (const socket of socketsOf(tripId, userId)) enter(socket, tripId, role)
+    },
     presence: (tripId, people) => io.local.to(roomOf(tripId)).emit('trip.presence', tripId, people),
     evict: (tripId, userId) => {
-      for (const id of io.of('/').adapter.rooms.get(roomOf(tripId)) ?? []) {
-        const socket = io.sockets.sockets.get(id)
-        if (socket?.data.user.userId !== userId) continue
-        socket.leave(roomOf(tripId))
+      for (const socket of socketsOf(tripId, userId)) {
+        exit(socket, tripId)
         socket.emit('trip.revoked', tripId)
       }
     },
@@ -127,11 +155,11 @@ export async function startServer({
       const { tripId } = parsed.data
       try {
         // Into the room only once access is known, and before the presence this causes.
-        const revision = await rooms.join(tripId, socket.id, socket.data.user, () => {
-          socket.join(roomOf(tripId))
-        })
+        const revision = await rooms.join(tripId, socket.id, socket.data.user, (role) =>
+          enter(socket, tripId, role),
+        )
         if (revision === null) {
-          socket.leave(roomOf(tripId))
+          exit(socket, tripId)
           return reply({ ok: false })
         }
         if (!socket.connected) return rooms.leaveAll(socket.id)
@@ -144,7 +172,7 @@ export async function startServer({
     socket.on('trip.leave', (payload) => {
       const parsed = tripPayload.safeParse(payload)
       if (!parsed.success) return
-      socket.leave(roomOf(parsed.data.tripId))
+      exit(socket, parsed.data.tripId)
       rooms.leave(parsed.data.tripId, socket.id)
     })
 

@@ -1,17 +1,9 @@
-import { type OperationErrorCode, operationRequestSchema } from '@tripforge/core'
+import { operationRequestSchema } from '@tripforge/core'
 import { applyOperation, OperationError } from '@tripforge/db'
 import { z } from 'zod'
+import { fail, operationStatus } from '@/lib/api'
 import { getSession } from '@/lib/auth'
 import { db } from '@/lib/db'
-
-const statuses: Record<OperationErrorCode, number> = {
-  invalid: 400,
-  forbidden: 403,
-  not_found: 404,
-  deleted: 410,
-}
-
-const fail = (error: string, status: number) => Response.json({ error }, { status })
 
 export async function POST(request: Request, { params }: { params: Promise<{ tripId: string }> }) {
   const session = await getSession()
@@ -28,7 +20,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tri
     })
     return Response.json(result)
   } catch (error) {
-    if (error instanceof OperationError) return fail(error.code, statuses[error.code])
+    if (error instanceof OperationError) return fail(error.code, operationStatus[error.code])
     throw error
   }
 }

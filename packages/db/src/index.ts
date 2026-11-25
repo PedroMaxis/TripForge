@@ -1,4 +1,5 @@
 export * from './client'
+export * from './group'
 export * from './log'
 export * from './members'
 export * from './operations'

@@ -11,6 +11,7 @@ import {
 } from '@tripforge/core'
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm'
 import type { AnyDb } from './client'
+import { loadGroup } from './group'
 import { days, items, tripMembers, trips, users } from './schema'
 
 const uuid = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
@@ -170,6 +171,7 @@ async function loadTrip(
     role,
     days: dayRows.map(({ id, date, title, notes }) => ({ id, date, title, notes })),
     items: itemRows.map(toTripItem).sort(byPosition),
+    group: role === 'viewer' ? null : await loadGroup(db, row.id),
   }
 }
 

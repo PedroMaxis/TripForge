@@ -4,25 +4,30 @@ import {
   clashingFields,
   datesBetween,
   daysApart,
+  isGroupOperation,
   type Operation,
-  type OperationErrorCode,
   type OperationResult,
   positionBetween,
   shiftDate,
   type TripItem,
 } from '@tripforge/core'
 import { and, asc, desc, eq, gte, inArray, isNull, ne, sql } from 'drizzle-orm'
+import {
+  findItem,
+  findLiveItem,
+  lockForChange,
+  OperationError,
+  pastResult,
+  record,
+  type Tx,
+} from './change'
 import type { AnyDb } from './client'
-import { activityLog, days, items, tripMembers, trips, users } from './schema'
+import { runInGroup } from './group'
+import { activityLog, days, items, trips, users } from './schema'
 import { toTripItem } from './trips'
 
-export class OperationError extends Error {
-  constructor(readonly code: OperationErrorCode) {
-    super(code)
-  }
-}
+export { OperationError }
 
-export type Tx = Parameters<Parameters<AnyDb['transaction']>[0]>[0]
 type Op<T extends Operation['type']> = Extract<Operation, { type: T }>
 
 const inList = (tripId: string, dayId: string | null) =>
@@ -57,21 +62,6 @@ async function requireDay(tx: Tx, tripId: string, dayId: string | null) {
     .from(days)
     .where(and(eq(days.id, dayId), eq(days.tripId, tripId)))
   if (!day) throw new OperationError('not_found')
-}
-
-async function findItem(tx: Tx, tripId: string, itemId: string) {
-  const [item] = await tx
-    .select()
-    .from(items)
-    .where(and(eq(items.id, itemId), eq(items.tripId, tripId)))
-  if (!item) throw new OperationError('not_found')
-  return item
-}
-
-async function findLiveItem(tx: Tx, tripId: string, itemId: string) {
-  const item = await findItem(tx, tripId, itemId)
-  if (item.deletedAt) throw new OperationError('deleted')
-  return item
 }
 
 async function saveItem(
@@ -175,6 +165,10 @@ async function run(
   op: Operation,
 ): Promise<TripItem | undefined> {
   const tripId = trip.id
+  if (isGroupOperation(op)) {
+    await runInGroup(tx, userId, trip, op)
+    return
+  }
   switch (op.type) {
     case 'trip.update':
       await updateTrip(tx, userId, trip, op)
@@ -297,14 +291,6 @@ async function settleQueued(
   return { op: Object.keys(kept).length > 0 ? { ...op, fields: kept } : null, conflict }
 }
 
-/** Moves the trip to its next revision, logs what happened and tells the realtime server. */
-export async function record(tx: Tx, entry: typeof activityLog.$inferInsert) {
-  const { tripId, revision } = entry
-  await tx.update(trips).set({ revision }).where(eq(trips.id, tripId))
-  await tx.insert(activityLog).values(entry)
-  await tx.execute(sql`select pg_notify('trip', ${JSON.stringify({ tripId, revision })})`)
-}
-
 /**
  * The only way a trip changes, apart from its members (members.ts). Locks the trip row, so its operations run one at a time and
  * revisions have no gaps, and records each one once however often it is sent.
@@ -315,24 +301,9 @@ export async function applyOperation(
 ): Promise<OperationResult> {
   const { userId, tripId, opId, queued } = request
   return db.transaction(async (tx) => {
-    const [trip] = await tx.select().from(trips).where(eq(trips.id, tripId)).for('update')
-    const [member] = await tx
-      .select({ role: tripMembers.role })
-      .from(tripMembers)
-      .where(and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, userId)))
-    if (!trip || !member || member.role === 'viewer') throw new OperationError('forbidden')
-
-    const [done] = await tx
-      .select({ payload: activityLog.payload })
-      .from(activityLog)
-      .where(
-        and(
-          eq(activityLog.tripId, tripId),
-          eq(activityLog.userId, userId),
-          eq(activityLog.opId, opId),
-        ),
-      )
-    if (done) return (done.payload as { result: OperationResult }).result
+    const trip = await lockForChange(tx, userId, tripId)
+    const done = await pastResult(tx, request)
+    if (done) return done.result
 
     const { op, conflict } =
       queued && request.op.type === 'item.update'
