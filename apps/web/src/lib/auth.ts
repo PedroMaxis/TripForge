@@ -44,6 +44,7 @@ function create() {
       customRules: {
         '/sign-in/email': { window: 60, max: 5 },
         '/sign-up/email': { window: 60, max: 10 },
+        '/change-password': { window: 60, max: 5 },
         '/request-password-reset': { window: 60, max: 3 },
       },
     },

@@ -22,7 +22,8 @@
     "p4": "Everyone together, live",
     "p4b": "You move a stop and Ana sees it at once, on her phone.",
     "appTitle": "The whole trip on one screen",
-    "end": "Start with your next trip"
+    "end": "Start with your next trip",
+    "privacy": "Privacy"
   },
   "Trips": {
     "title": "My trips",
@@ -42,7 +43,8 @@
     "back": "Back to the start"
   },
   "SignUp": {
-    "title": "Create your account"
+    "title": "Create your account",
+    "privacy": "How your data is kept"
   },
   "Account": {
     "name": "Name",
@@ -394,6 +396,67 @@
       "amount": "Write an amount, such as 12.50.",
       "split": "Choose at least one person.",
       "date": "Choose a date."
+    }
+  },
+  "Profile": {
+    "title": "Your account",
+    "back": "My trips",
+    "name": "Name",
+    "nameLabel": "How others see you",
+    "save": "Save",
+    "saved": "Saved.",
+    "password": "Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordHint": "At least 8 characters. You are signed out on your other devices.",
+    "changePassword": "Change password",
+    "data": "Your data",
+    "dataBody": "Everything you see in TripForge, in one file you can keep or take elsewhere.",
+    "export": "Download my data",
+    "privacy": "Privacy",
+    "delete": "Delete account",
+    "deleteBody": "Trips you plan alone are deleted. Trips you plan with others go on, and the one who has planned longest takes yours over. What you wrote and spent there stays, without your name. This cannot be undone.",
+    "confirmPassword": "Confirm with your password",
+    "deleteForever": "Delete my account forever",
+    "cancel": "Cancel",
+    "deletedName": "Deleted account",
+    "errors": {
+      "wrong": "That is not your password.",
+      "length": "Use a password of 8 to 128 characters.",
+      "tooMany": "Too many attempts. Wait a minute and try again.",
+      "failed": "Something went wrong. Try again."
+    }
+  },
+  "Privacy": {
+    "title": "Privacy",
+    "intro": "TripForge is a small, free project with no ads, no tracking and nothing for sale.",
+    "kept": {
+      "title": "What is kept",
+      "body": "Your name, your email, a scrambled form of your password, and what you put in your trips: places, times, notes, comments, expenses, lists and files. While you are signed in, also your device's browser name and internet address, for your safety."
+    },
+    "seen": {
+      "title": "Who sees it",
+      "body": "Only the people on each trip. Bookings, files, comments, votes, expenses and lists are only for those who can edit it. Whoever has a view link sees the itinerary, the map and the notes, and nobody's name."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "body": "Two, both needed: one keeps you signed in, and the other remembers your language. What you change without a connection waits in your browser until it can be sent."
+    },
+    "others": {
+      "title": "Other services",
+      "body": "The map comes to your browser straight from OpenFreeMap, and the relief from Amazon's open data, so they see your internet address. Place searches go to Photon, routes to OSRM at FOSSGIS and forecasts to MET Norway, always through our server: they see places, never who you are. The site runs on a server in Brazil."
+    },
+    "backups": {
+      "title": "Copies",
+      "body": "The database is copied every day, and each copy is deleted after about two weeks. Something you delete can still be in them until then."
+    },
+    "choices": {
+      "title": "Your choices",
+      "body": "In your account you can change your name, download your data and delete everything. Links can be revoked at any time on the trip's people page."
+    },
+    "contact": {
+      "title": "Questions",
+      "body": "Write to whoever runs this site <link>on the project's page</link>. Do not put personal data there: it is public."
     }
   }
 }

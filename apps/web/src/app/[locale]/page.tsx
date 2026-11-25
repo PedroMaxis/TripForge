@@ -65,6 +65,11 @@ export default async function LandingPage() {
       </main>
       <footer className="relative z-10 bg-paper px-4 py-10 text-sm text-muted">
         <p className="mx-auto max-w-7xl">{t('credit')}</p>
+        <p className="mx-auto mt-3 max-w-7xl">
+          <Link href="/privacy" className="underline underline-offset-4 hover:text-ink">
+            {t('privacy')}
+          </Link>
+        </p>
       </footer>
     </>
   )

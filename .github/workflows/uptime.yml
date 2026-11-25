@@ -1,0 +1,18 @@
+# Looks at the site now and then. When it is down this fails, and GitHub writes to the owner.
+name: Uptime
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - run: |
+          curl --fail --silent --show-error --max-time 20 --retry 5 --retry-delay 30 --retry-all-errors \
+            https://tripforge.duckdns.org/api/health

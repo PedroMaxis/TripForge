@@ -52,7 +52,9 @@ export default async function TripsPage() {
   return (
     <>
       <Header>
-        <span className="text-sm">{session.user.name}</span>
+        <Link href="/account" className="py-3 text-sm hover:text-accent">
+          {session.user.name}
+        </Link>
         <form action={signOut.bind(null, locale)}>
           <button type="submit" className="min-h-11 text-sm text-ink-2 hover:text-ink">
             {t('signOut')}

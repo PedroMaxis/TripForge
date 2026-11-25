@@ -22,7 +22,8 @@
     "p4": "Todo mundo junto, ao vivo",
     "p4b": "Você muda uma parada e a Ana vê na hora, no celular dela.",
     "appTitle": "A viagem inteira numa tela só",
-    "end": "Comece pela próxima viagem"
+    "end": "Comece pela próxima viagem",
+    "privacy": "Privacidade"
   },
   "Trips": {
     "title": "Minhas viagens",
@@ -42,7 +43,8 @@
     "back": "Voltar ao início"
   },
   "SignUp": {
-    "title": "Crie sua conta"
+    "title": "Crie sua conta",
+    "privacy": "Como seus dados são guardados"
   },
   "Account": {
     "name": "Nome",
@@ -394,6 +396,67 @@
       "amount": "Escreva um valor, como 12,50.",
       "split": "Escolha pelo menos uma pessoa.",
       "date": "Escolha uma data."
+    }
+  },
+  "Profile": {
+    "title": "Sua conta",
+    "back": "Minhas viagens",
+    "name": "Nome",
+    "nameLabel": "Como os outros te veem",
+    "save": "Salvar",
+    "saved": "Salvo.",
+    "password": "Senha",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha",
+    "passwordHint": "Pelo menos 8 caracteres. Você vai sair da conta nos outros aparelhos.",
+    "changePassword": "Trocar senha",
+    "data": "Seus dados",
+    "dataBody": "Tudo o que você vê no TripForge, num arquivo pra guardar ou levar pra outro lugar.",
+    "export": "Baixar meus dados",
+    "privacy": "Privacidade",
+    "delete": "Excluir conta",
+    "deleteBody": "As viagens que só você planeja são apagadas. As que você planeja com outras pessoas continuam, e quem está nelas há mais tempo assume as suas. O que você escreveu e gastou nelas fica, sem o seu nome. Não dá pra desfazer.",
+    "confirmPassword": "Confirme com a sua senha",
+    "deleteForever": "Excluir minha conta pra sempre",
+    "cancel": "Cancelar",
+    "deletedName": "Conta excluída",
+    "errors": {
+      "wrong": "Essa não é a sua senha.",
+      "length": "Use uma senha de 8 a 128 caracteres.",
+      "tooMany": "Muitas tentativas. Espere um minuto e tente de novo.",
+      "failed": "Algo deu errado. Tente de novo."
+    }
+  },
+  "Privacy": {
+    "title": "Privacidade",
+    "intro": "O TripForge é um projeto pequeno e gratuito, sem anúncios, sem rastreamento e sem nada à venda.",
+    "kept": {
+      "title": "O que fica guardado",
+      "body": "Seu nome, seu e-mail, uma forma embaralhada da sua senha e o que você põe nas viagens: lugares, horários, notas, comentários, gastos, listas e anexos. Enquanto você está com a conta aberta, também o navegador e o endereço de internet do aparelho, por segurança."
+    },
+    "seen": {
+      "title": "Quem vê",
+      "body": "Só as pessoas de cada viagem. Reservas, anexos, comentários, votos, gastos e listas são só de quem pode editar. Quem tem um link de ver enxerga o roteiro, o mapa e as notas, e o nome de ninguém."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "body": "Dois, ambos necessários: um mantém sua conta aberta e o outro lembra o idioma. O que você muda sem conexão espera no seu navegador até poder ser enviado."
+    },
+    "others": {
+      "title": "Outros serviços",
+      "body": "O mapa vem direto do OpenFreeMap pro seu navegador, e o relevo, dos dados abertos da Amazon; por isso eles veem seu endereço de internet. As buscas de lugares vão pro Photon, as rotas pro OSRM da FOSSGIS e as previsões pro MET Norway, sempre pelo nosso servidor: eles veem lugares, nunca quem você é. O site roda num servidor no Brasil."
+    },
+    "backups": {
+      "title": "Cópias",
+      "body": "O banco de dados é copiado todo dia, e cada cópia é apagada depois de umas duas semanas. Algo que você excluir ainda pode estar nelas até lá."
+    },
+    "choices": {
+      "title": "Suas escolhas",
+      "body": "Na sua conta dá pra mudar o nome, baixar seus dados e excluir tudo. Os links podem ser revogados a qualquer momento na página de pessoas da viagem."
+    },
+    "contact": {
+      "title": "Dúvidas",
+      "body": "Escreva pra quem cuida do site <link>na página do projeto</link>. Não coloque dados pessoais lá: é pública."
     }
   }
 }

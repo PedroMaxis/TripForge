@@ -115,7 +115,7 @@ async function roleOf(tx: Tx, tripId: string, userId: string) {
   return member?.role
 }
 
-function recordMember(
+export function recordMember(
   tx: Tx,
   trip: { id: string; revision: number },
   actorId: string,

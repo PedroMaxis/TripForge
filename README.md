@@ -13,6 +13,10 @@ A collaborative trip planner: a group builds the itinerary day by day, together 
 - Map with the way between stops by street, with distance, time, and a warning when there is no time to get there
 - Place search, and a cover for each trip drawn from the real relief of its destination
 - Invites to edit, and view links that open straight on the itinerary, with no account
+- During the trip: the next stop with the way there, the weather of each day, and what is already done
+- Shared expenses with few transfers to settle up, in any currency; to-do and packing lists
+- Votes on ideas, and bookings, files and comments on each stop, only for those who edit
+- A shorter order for a day, copies of a trip, calendar files and a printable itinerary
 - Offline edits are kept and sent later; when they clash, people choose
 - History of who changed what
 - Installable on a phone, in English and Brazilian Portuguese
@@ -76,7 +80,7 @@ The end-to-end tests replace every outside service with a local stand-in, and us
 
 ## Credits
 
-Map by [OpenFreeMap](https://openfreemap.org) and [OpenMapTiles](https://openmaptiles.org), data from [OpenStreetMap](https://www.openstreetmap.org/copyright). Place search by [Photon](https://photon.komoot.io), routes by [OSRM at FOSSGIS](https://routing.openstreetmap.de), relief from Mapzen and NASA SRTM.
+Map by [OpenFreeMap](https://openfreemap.org) and [OpenMapTiles](https://openmaptiles.org), data from [OpenStreetMap](https://www.openstreetmap.org/copyright). Place search by [Photon](https://photon.komoot.io), routes by [OSRM at FOSSGIS](https://routing.openstreetmap.de), forecasts by [MET Norway](https://www.met.no), relief from Mapzen and NASA SRTM.
 
 ## License
 
