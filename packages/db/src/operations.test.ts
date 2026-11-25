@@ -288,3 +288,65 @@ test('a deleted row stays in the table', async () => {
       .where(and(eq(items.id, itemId), eq(items.tripId, tripId))),
   ).toHaveLength(1)
 })
+
+describe('the day of the trip', () => {
+  test('a day is put in another order, all at once', async () => {
+    const [a, b, c] = [
+      await add('A', dayIds[0], 'a0'),
+      await add('B', dayIds[0], 'a1'),
+      await add('C', dayIds[0], 'a2'),
+    ]
+    const before = (await snapshot()).revision
+    await apply({
+      type: 'day.order',
+      dayId: dayIds[0]!,
+      items: [c, a, b].map((itemId, i) => ({ itemId, position: `a${i}` })),
+    })
+    expect(await titles(dayIds[0]!)).toEqual(['C', 'A', 'B'])
+    expect((await snapshot()).revision).toBe(before + 1)
+  })
+  test('a stop that left the day, or belongs to another trip, is left alone', async () => {
+    const other = await createTrip(t.db, 'owner', {
+      title: 'Rio',
+      destination: 'Rio',
+      startDate: '2027-03-04',
+      endDate: '2027-03-04',
+      timezone: 'UTC',
+    })
+    const otherDay = (await getTrip(t.db, 'owner', other))!.days[0]!.id
+    const foreign = randomUUID()
+    await applyOperation(t.db, {
+      userId: 'owner',
+      tripId: other,
+      opId: randomUUID(),
+      op: {
+        type: 'item.create',
+        itemId: foreign,
+        dayId: otherDay,
+        position: 'a5',
+        title: 'X',
+        kind: 'other',
+      },
+    })
+    const moved = await add('A', dayIds[1], 'a0')
+    await apply({
+      type: 'day.order',
+      dayId: dayIds[0]!,
+      items: [
+        { itemId: moved, position: 'a9' },
+        { itemId: foreign, position: 'a9' },
+      ],
+    })
+    const positions = await t.db.select({ p: items.position }).from(items)
+    expect(positions.map((r) => r.p).sort()).toEqual(['a0', 'a5'])
+    await expect(
+      apply({ type: 'day.order', dayId: otherDay, items: [{ itemId: foreign, position: 'a9' }] }),
+    ).rejects.toMatchObject(code('not_found'))
+  })
+  test('a stop is marked as done', async () => {
+    const itemId = await add('A')
+    expect((await snapshot()).items[0]?.done).toBe(false)
+    await apply({ type: 'item.update', itemId, baseVersion: 1, fields: { done: true } })
+    expect((await snapshot()).items[0]?.done).toBe(true)
+  })
+})

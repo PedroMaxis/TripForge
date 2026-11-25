@@ -25,6 +25,8 @@ const schema = z.object({
   TERRAIN_URL: withDefault(
     'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
   ),
+  /** "off" turns the forecast off. */
+  WEATHER_URL: withDefault('https://api.met.no/weatherapi/locationforecast/2.0'),
   /** Without it, nobody can recover a password by email. */
   SMTP_URL: optional,
   MAIL_FROM: withDefault('TripForge <no-reply@localhost>'),

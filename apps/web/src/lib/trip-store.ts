@@ -1,7 +1,6 @@
 import {
   applyEntry,
   applyLocally,
-  byPosition,
   type Conflict,
   type LogEntry,
   type Operation,
@@ -13,9 +12,12 @@ import {
   withItem,
 } from '@tripforge/core'
 import { createStore } from 'zustand'
+import { itemsOf } from './trip-items'
+
+export { itemsOf }
 
 export type SyncState = 'saved' | 'saving' | 'offline' | 'signedOut'
-export type Undo = { kind: 'moved' | 'deleted'; title: string; op: Operation }
+export type Undo = { kind: 'moved' | 'deleted' | 'ordered'; title: string; op: Operation }
 export type Notice =
   | { kind: 'rejected' }
   | { kind: 'deletedByOther'; itemId: string; title: string; userName: string }
@@ -60,10 +62,6 @@ type TripStore = {
 }
 
 const overwriteWindowMs = 10_000
-
-export function itemsOf(trip: Trip, dayId: string | null) {
-  return trip.items.filter((i) => i.dayId === dayId).sort(byPosition)
-}
 
 /** The key that puts an item at an index of a list, not counting the item itself. */
 export function positionAt(trip: Trip, dayId: string | null, index: number, movingId?: string) {

@@ -58,6 +58,8 @@ export type TripItem = {
   lng: number | null
   osmRef: string | null
   notes: string | null
+  /** Already been there. */
+  done: boolean
   version: number
   updatedBy: string | null
 }

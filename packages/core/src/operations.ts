@@ -26,6 +26,7 @@ const itemFields = {
   ...coordinates,
   osmRef: text(40),
   notes: text(5000),
+  done: z.boolean(),
 }
 
 export const operationSchema = z.discriminatedUnion('type', [
@@ -44,6 +45,15 @@ export const operationSchema = z.discriminatedUnion('type', [
       .strictObject({ title: text(120), notes: text(5000) })
       .partial()
       .refine(notEmpty),
+  }),
+  z.strictObject({
+    type: z.literal('day.order'),
+    dayId: id,
+    items: z
+      .array(z.strictObject({ itemId: id, position }))
+      .min(1)
+      .max(200)
+      .refine((list) => new Set(list.map((i) => i.itemId)).size === list.length),
   }),
   z.strictObject({
     type: z.literal('item.create'),

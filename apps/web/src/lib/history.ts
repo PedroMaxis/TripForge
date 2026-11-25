@@ -9,6 +9,7 @@ type EntryKey =
   | 'item_delete'
   | 'item_restore'
   | 'day_update'
+  | 'day_order'
   | 'trip_update'
   | 'archived'
   | 'unarchived'
@@ -34,6 +35,8 @@ function lineOf(entry: LogEntry, trip: Trip): HistoryLine {
   switch (op.type) {
     case 'day.update':
       return { ...line, key: 'day_update', dayId: op.dayId }
+    case 'day.order':
+      return { ...line, key: 'day_order', dayId: op.dayId }
     case 'trip.update': {
       const { archived } = op.fields
       const key = archived === undefined ? 'trip_update' : archived ? 'archived' : 'unarchived'

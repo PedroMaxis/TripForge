@@ -1,4 +1,4 @@
-import { type Trip, tripLegs } from '@tripforge/core'
+import { type Trip, tripCalendar, tripLegs } from '@tripforge/core'
 import { findLegs, getSharedTrip, getTrip, reliefs } from '@tripforge/db'
 import { eq } from 'drizzle-orm'
 import { getSession } from './auth'
@@ -7,6 +7,7 @@ import { env } from './env'
 import { createRateLimit } from './rate-limit'
 import { drawRelief } from './relief'
 import { router } from './router'
+import { hasForecast, tripWeather } from './weather'
 
 export const fail = (error: string, status: number) => Response.json({ error }, { status })
 export const fresh = { 'cache-control': 'no-store' }
@@ -43,6 +44,22 @@ export async function routesResponse(trip: Trip) {
   )
   const pending = router().request(wanted.filter((l) => !legs[l.key]))
   return Response.json({ legs, pending }, { headers: fresh })
+}
+
+/** The trip as a file for any calendar app. */
+export function calendarResponse(trip: Trip) {
+  const name = trip.title.replace(/[^\p{L}\p{N} -]/gu, '').trim() || 'trip'
+  return new Response(tripCalendar(trip, new Date()), {
+    headers: {
+      ...fresh,
+      'content-type': 'text/calendar; charset=utf-8',
+      'content-disposition': `attachment; filename="trip.ics"; filename*=UTF-8''${encodeURIComponent(name)}.ics`,
+    },
+  })
+}
+
+export async function weatherResponse(trip: Trip) {
+  return Response.json(hasForecast(trip) ? await tripWeather(trip) : {}, { headers: fresh })
 }
 
 /** The contour lines of a trip's destination. */

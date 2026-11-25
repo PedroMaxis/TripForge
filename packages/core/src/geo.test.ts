@@ -26,6 +26,7 @@ const item = (id: string, over: object = {}) => ({
   lng: null,
   osmRef: null,
   notes: null,
+  done: false,
   version: 1,
   updatedBy: null,
   ...over,

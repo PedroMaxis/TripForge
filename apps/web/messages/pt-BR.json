@@ -163,7 +163,21 @@
       "empty": "vazio",
       "useMine": "Usar a minha",
       "keepTheirs": "Manter a de {name}"
-    }
+    },
+    "today": "Hoje",
+    "now": "Agora",
+    "next": "Próxima parada",
+    "goWith": "Ir com {app}",
+    "beenHere": "Já fomos",
+    "notBeenHere": "Ainda não fomos",
+    "done": "feita",
+    "calendar": "Salvar no calendário",
+    "print": "Imprimir",
+    "printNow": "Imprimir ou salvar em PDF",
+    "backToTrip": "Voltar pra viagem",
+    "duplicate": "Duplicar",
+    "shorten": "Encurtar o caminho em cerca de {distance}",
+    "ordered": "{title} está em nova ordem"
   },
   "Map": {
     "label": "Mapa da viagem",
@@ -263,10 +277,30 @@
       "joined": "{name} entrou",
       "left": "{name} saiu",
       "removed": "{name} removeu {other}",
-      "role": "{name} mudou o papel de {other}"
+      "role": "{name} mudou o papel de {other}",
+      "day_order": "{name} pôs {day} em nova ordem"
     }
   },
   "SignIn": {
     "title": "Que bom te ver de novo"
+  },
+  "Weather": {
+    "range": "{min} a {max} °C",
+    "kinds": {
+      "sun": "Sol",
+      "partly": "Parcialmente nublado",
+      "cloudy": "Nublado",
+      "fog": "Neblina",
+      "rain": "Chuva",
+      "storm": "Tempestade",
+      "snow": "Neve"
+    }
+  },
+  "Duplicate": {
+    "title": "Duplicar viagem",
+    "body": "Os dias, as paradas, as ideias e as notas vão pra uma nova viagem de {count, plural, one {# dia} other {# dias}}, que só você vê até convidar alguém.",
+    "copyOf": "{title} (cópia)",
+    "create": "Criar a cópia",
+    "failed": "Dê um nome e uma data que exista."
   }
 }

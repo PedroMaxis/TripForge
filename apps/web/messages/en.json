@@ -163,7 +163,21 @@
       "empty": "empty",
       "useMine": "Use mine",
       "keepTheirs": "Keep {name}’s"
-    }
+    },
+    "today": "Today",
+    "now": "Now",
+    "next": "Next stop",
+    "goWith": "Go with {app}",
+    "beenHere": "We've been here",
+    "notBeenHere": "Not yet, after all",
+    "done": "done",
+    "calendar": "Add to a calendar",
+    "print": "Print",
+    "printNow": "Print or save as PDF",
+    "backToTrip": "Back to the trip",
+    "duplicate": "Duplicate",
+    "shorten": "Shorten the way by about {distance}",
+    "ordered": "{title} is in a new order"
   },
   "Map": {
     "label": "Trip map",
@@ -263,10 +277,30 @@
       "joined": "{name} joined",
       "left": "{name} left",
       "removed": "{name} removed {other}",
-      "role": "{name} changed the role of {other}"
+      "role": "{name} changed the role of {other}",
+      "day_order": "{name} put {day} in a new order"
     }
   },
   "SignIn": {
     "title": "Welcome back"
+  },
+  "Weather": {
+    "range": "{min} to {max} °C",
+    "kinds": {
+      "sun": "Sunny",
+      "partly": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Fog",
+      "rain": "Rain",
+      "storm": "Storm",
+      "snow": "Snow"
+    }
+  },
+  "Duplicate": {
+    "title": "Duplicate trip",
+    "body": "The days, stops, ideas and notes are copied to a new trip of {count, plural, one {# day} other {# days}}, which only you can see until you invite people.",
+    "copyOf": "{title} (copy)",
+    "create": "Create the copy",
+    "failed": "Give it a name and a real date."
   }
 }

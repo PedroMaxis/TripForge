@@ -1,7 +1,7 @@
 'use server'
 
-import { newTripSchema } from '@tripforge/core'
-import { createTrip } from '@tripforge/db'
+import { isDate, newTripSchema } from '@tripforge/core'
+import { createTrip, duplicateTrip } from '@tripforge/db'
 import { redirect } from 'next/navigation'
 import { hasLocale } from 'next-intl'
 import type { z } from 'zod'
@@ -12,12 +12,36 @@ import { readTripForm } from './trip-form'
 
 export type TripFormError = 'title' | 'destination' | 'dates' | 'timezone'
 
+const localePrefix = (locale: string) =>
+  `/${hasLocale(routing.locales, locale) ? locale : routing.defaultLocale}`
+
+type CopyForm = { title: string; startDate: string; failed: boolean }
+
+export async function duplicateTripAction(
+  locale: string,
+  tripId: string,
+  _: CopyForm,
+  form: FormData,
+): Promise<CopyForm> {
+  const prefix = localePrefix(locale)
+  const session = await getSession()
+  if (!session) redirect(`${prefix}/sign-in`)
+  const title = String(form.get('title') ?? '').trim()
+  const startDate = String(form.get('startDate') ?? '')
+  const copyId =
+    title && title.length <= 120 && isDate(startDate)
+      ? await duplicateTrip(db(), session.user.id, String(tripId), { title, startDate })
+      : null
+  if (!copyId) return { title, startDate, failed: true }
+  redirect(`${prefix}/trips/${copyId}`)
+}
+
 export async function createTripAction(
   locale: string,
   _: TripFormError | null,
   form: FormData,
 ): Promise<TripFormError | null> {
-  const prefix = `/${hasLocale(routing.locales, locale) ? locale : routing.defaultLocale}`
+  const prefix = localePrefix(locale)
   const session = await getSession()
   if (!session) redirect(`${prefix}/sign-in`)
   const parsed = newTripSchema.safeParse(readTripForm(Object.fromEntries(form)))

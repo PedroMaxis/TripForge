@@ -15,6 +15,7 @@ export const operationTypes = [
   'item.delete',
   'item.restore',
   'day.update',
+  'day.order',
   'trip.update',
   'member.changed',
 ] as const

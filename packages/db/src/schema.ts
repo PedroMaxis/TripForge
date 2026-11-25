@@ -223,6 +223,7 @@ export const items = pgTable(
     lng: doublePrecision('lng'),
     osmRef: text('osm_ref'),
     notes: text('notes'),
+    done: boolean('done').notNull().default(false),
     version: integer('version').notNull().default(1),
     updatedBy: text('updated_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: updatedAt(),

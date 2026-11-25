@@ -26,6 +26,17 @@ export function applyLocally(trip: Trip, op: Operation): Trip {
         ...trip,
         days: trip.days.map((d) => (d.id === op.dayId ? { ...d, ...defined(op.fields) } : d)),
       }
+    case 'day.order': {
+      const positions = new Map(op.items.map((i) => [i.itemId, i.position]))
+      return {
+        ...trip,
+        items: trip.items
+          .map((i) =>
+            i.dayId === op.dayId ? { ...i, position: positions.get(i.id) ?? i.position } : i,
+          )
+          .sort(byPosition),
+      }
+    }
     case 'item.create':
       return withItem(trip, {
         id: op.itemId,
@@ -41,6 +52,7 @@ export function applyLocally(trip: Trip, op: Operation): Trip {
         lng: null,
         osmRef: null,
         notes: null,
+        done: false,
         ...op.place,
         version: 1,
         updatedBy: null,

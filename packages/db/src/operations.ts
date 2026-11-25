@@ -183,6 +183,16 @@ async function run(
       await requireDay(tx, tripId, op.dayId)
       await tx.update(days).set(op.fields).where(eq(days.id, op.dayId))
       return
+    case 'day.order':
+      await requireDay(tx, tripId, op.dayId)
+      for (const { itemId, position } of op.items) {
+        // One that left the day meanwhile stays where it went.
+        await tx
+          .update(items)
+          .set({ position })
+          .where(and(eq(items.id, itemId), eq(items.tripId, tripId), eq(items.dayId, op.dayId)))
+      }
+      return
     case 'item.create': {
       await requireDay(tx, tripId, op.dayId)
       const [existing] = await tx

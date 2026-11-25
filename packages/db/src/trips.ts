@@ -1,8 +1,10 @@
 import {
   byPosition,
   datesBetween,
+  daysApart,
   type NewTrip,
   newTripSchema,
+  shiftDate,
   type Trip,
   type TripItem,
   type TripSummary,
@@ -18,7 +20,8 @@ export const isUuid = (text: string) => uuid.test(text)
 const toTime = (time: string | null) => time?.slice(0, 5) ?? null
 
 export function toTripItem(row: typeof items.$inferSelect): TripItem {
-  const { id, dayId, position, kind, title, placeName, address, lat, lng, osmRef, notes } = row
+  const { id, dayId, position, kind, title, placeName, address, lat, lng, osmRef, notes, done } =
+    row
   const { version, updatedBy } = row
   return {
     id,
@@ -34,6 +37,7 @@ export function toTripItem(row: typeof items.$inferSelect): TripItem {
     lng,
     osmRef,
     notes,
+    done,
     version,
     updatedBy,
   }
@@ -52,6 +56,46 @@ export async function createTrip(db: AnyDb, userId: string, input: NewTrip) {
       .insert(days)
       .values(datesBetween(values.startDate, values.endDate).map((date) => ({ tripId, date })))
     return tripId
+  })
+}
+
+/** A new trip of one's own with the same days and stops, or null when it is not theirs to see. */
+export async function duplicateTrip(
+  db: AnyDb,
+  userId: string,
+  tripId: string,
+  { title, startDate }: Pick<NewTrip, 'title' | 'startDate'>,
+): Promise<string | null> {
+  const source = await getTrip(db, userId, tripId)
+  if (!source) return null
+  const { destination, destinationLat, destinationLng, timezone } = source
+  return db.transaction(async (tx) => {
+    const id = await createTrip(tx, userId, {
+      title,
+      destination,
+      destinationLat,
+      destinationLng,
+      timezone,
+      startDate,
+      endDate: shiftDate(startDate, daysApart(source.startDate, source.endDate)),
+    })
+    const copies = await tx.select().from(days).where(eq(days.tripId, id)).orderBy(asc(days.date))
+    const dayIds = new Map(source.days.map((day, i) => [day.id, copies[i]!.id]))
+    for (const day of source.days) {
+      if (!day.title && !day.notes) continue
+      await tx
+        .update(days)
+        .set({ title: day.title, notes: day.notes })
+        .where(eq(days.id, dayIds.get(day.id)!))
+    }
+    const rows = source.items.map(({ id: _, version: __, done: ___, dayId, ...item }) => ({
+      ...item,
+      tripId: id,
+      dayId: dayId && dayIds.get(dayId)!,
+      updatedBy: userId,
+    }))
+    if (rows.length > 0) await tx.insert(items).values(rows)
+    return id
   })
 }
 

@@ -17,12 +17,20 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import type { Operation, Place, Trip } from '@tripforge/core'
+import {
+  nextStop,
+  type Operation,
+  type Place,
+  positionBetween,
+  shorterOrder,
+  type Trip,
+} from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
+import { formatDistance } from '@/lib/travel'
 import { createTripApi } from '@/lib/trip-api'
 import { createTripStore, itemsOf, type Notice, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
@@ -32,12 +40,17 @@ import { AutoField } from './auto-field'
 import { Conflicts } from './conflicts'
 import { Cover } from './cover'
 import { DayStrip, isLeg, legDay } from './day-strip'
+import { NextStop } from './next-stop'
 import { People } from './people'
 import { Stop } from './stop'
+import { TripLinks } from './trip-links'
 import { type MapSources, TripMap } from './trip-map'
 import { useArrivals } from './use-arrivals'
 import { useLegs } from './use-legs'
+import { useNow } from './use-now'
 import { useRealtime } from './use-realtime'
+import { useWeather } from './use-weather'
+import { Weather } from './weather'
 
 // Over the strip only the pointer counts; inside the list, the nearest row.
 const collisions: CollisionDetection = (args) => {
@@ -94,7 +107,13 @@ export function TripScreen({
   const editorOf = (itemId: string) =>
     present.find((p) => p.editing === itemId && p.userId !== userId)?.name ?? null
 
-  const legs = useLegs(trip, sync === 'saved', `/api/trips/${trip.id}`)
+  const page = `/trips/${trip.id}`
+  const source = `/api${page}`
+  const legs = useLegs(trip, sync === 'saved', source)
+  const weather = useWeather(source)
+  const now = useNow(trip.timezone)
+  const today = now && trip.days.find((d) => d.date === now.date)
+  const next = now && today ? nextStop(itemsOf(trip, today.id), now.time) : null
   const { destinationLat, destinationLng } = trip
   const near = useMemo<Near>(
     () =>
@@ -106,6 +125,10 @@ export function TripScreen({
   const hasMap = near !== null || trip.items.some((i) => i.lat !== null)
 
   const { arrivals, total } = useArrivals(list, day !== null, legs)
+  const shorter = useMemo(
+    () => (canEdit && dayId ? shorterOrder(itemsOf(trip, dayId)) : null),
+    [canEdit, trip, dayId],
+  )
 
   useEffect(() => {
     if (!undo && !notice) return
@@ -152,6 +175,27 @@ export function TripScreen({
     if (!item || item.dayId === toDayId) return
     setOpenId(null)
     move(itemId, toDayId, itemsOf(trip, toDayId).length)
+  }
+
+  function shorten() {
+    if (!day || !shorter) return
+    let position: string | null = null
+    const items = shorter.ids.map((itemId) => {
+      position = positionBetween(position, null)
+      return { itemId, position }
+    })
+    dispatch(
+      { type: 'day.order', dayId: day.id, items },
+      {
+        kind: 'ordered',
+        title: dayName(trip.days.indexOf(day)),
+        op: {
+          type: 'day.order',
+          dayId: day.id,
+          items: list.map(({ id: itemId, position }) => ({ itemId, position })),
+        },
+      },
+    )
   }
 
   function drop({ active, over }: DragEndEvent) {
@@ -297,6 +341,27 @@ export function TripScreen({
                 <People members={trip.members} online={online} />
               </div>
             </Cover>
+            {now && next && (
+              <NextStop
+                item={next}
+                time={now.time}
+                onOpen={() => {
+                  if (next.dayId !== dayId) choose(next.dayId)
+                  setOpenId(next.id)
+                }}
+                onDone={
+                  canEdit
+                    ? () =>
+                        dispatch({
+                          type: 'item.update',
+                          itemId: next.id,
+                          baseVersion: next.version,
+                          fields: { done: true },
+                        })
+                    : undefined
+                }
+              />
+            )}
             <Conflicts trip={trip} conflicts={conflicts} onSettle={settle} />
 
             <div className="flex flex-wrap items-end gap-x-4 gap-y-3 px-4 pt-6 pb-3">
@@ -328,6 +393,7 @@ export function TripScreen({
                     : t('ideasBody')}
                   {total && `, ${total}`}
                 </p>
+                <Weather weather={day ? weather[day.date] : undefined} />
               </div>
               {canEdit && (
                 <AddItem
@@ -406,14 +472,14 @@ export function TripScreen({
                 </ol>
               </SortableContext>
             )}
-            <p className="px-4 pt-8">
-              <Link
-                href={`/trips/${trip.id}/history`}
-                className="text-sm text-accent underline underline-offset-4"
-              >
-                {t('history')}
-              </Link>
-            </p>
+            {shorter && (
+              <p className="px-4 pt-4">
+                <button type="button" className="btn" onClick={shorten}>
+                  {t('shorten', { distance: formatDistance(shorter.savedKm * 1000, locale) })}
+                </button>
+              </p>
+            )}
+            <TripLinks page={page} source={source} member />
           </div>
         </main>
       </div>

@@ -1,5 +1,5 @@
 import { applyLocally, withItem } from './apply-locally'
-import type { Role } from './domain'
+import { operationTypes, type Role } from './domain'
 import type { Operation } from './operations'
 import type { Trip, TripItem } from './trip'
 
@@ -38,7 +38,8 @@ export type OperationResult = { revision: number; item?: TripItem; conflict?: Co
 /** The trip after a change, or null when only loading it again can tell. */
 export function applyEntry(trip: Trip, entry: LogEntry): Trip | null {
   const { op, item, revision } = entry
-  if (op.type === 'member.changed') return null
+  // Also what a newer version of the app did, which this one knows nothing about.
+  if (op.type === 'member.changed' || !operationTypes.includes(op.type)) return null
   if (op.type === 'trip.update' && (op.fields.startDate || op.fields.endDate)) return null
   const next = applyLocally(trip, op)
   return {

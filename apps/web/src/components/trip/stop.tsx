@@ -14,6 +14,7 @@ import { useEffect, useId, useRef } from 'react'
 import { formatDate } from '@/lib/dates'
 import type { Near } from '../place-search'
 import { AutoField } from './auto-field'
+import { GoLinks } from './go-links'
 import { PlaceField } from './place-field'
 
 type Fields = Extract<Operation, { type: 'item.update' }>['fields']
@@ -84,7 +85,7 @@ export function Stop(props: Props) {
           aria-hidden="true"
           className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-medium ${open ? 'bg-accent text-accent-ink' : 'bg-soft'}`}
         >
-          {number ?? '+'}
+          {item.done && number ? '✓' : (number ?? '+')}
         </span>
         <button
           type="button"
@@ -97,6 +98,7 @@ export function Stop(props: Props) {
             className="block font-display text-xl leading-tight [overflow-wrap:anywhere]"
           >
             {item.title}
+            {item.done && <span className="sr-only"> {t('done')}</span>}
           </span>
           {(when || late || item.placeName) && (
             <span className="block text-sm text-ink-2 tabular-nums">
@@ -151,11 +153,11 @@ export function Stop(props: Props) {
 }
 
 function StopDetails({ item }: { item: TripItem }) {
-  if (!item.address && !item.notes) return null
   return (
     <div className="grid gap-2 px-4 pb-5 pl-[3.75rem]">
       {item.address && <p className="text-ink-2">{item.address}</p>}
       {item.notes && <p className="whitespace-pre-wrap">{item.notes}</p>}
+      <GoLinks item={item} />
     </div>
   )
 }
@@ -256,7 +258,13 @@ function StopForm({ item, days, dayName, near, onSave, onMove, onDelete }: Props
         </select>
       </div>
       {text('notes', t('notes'), 5000)}
-      <div className="sm:col-span-2">
+      <div className="flex flex-wrap gap-2 sm:col-span-2">
+        <GoLinks item={item} />
+        {item.dayId && (
+          <button type="button" className="btn" onClick={() => onSave({ done: !item.done })}>
+            {item.done ? t('notBeenHere') : t('beenHere')}
+          </button>
+        )}
         <button type="button" className="btn" onClick={onDelete}>
           {t('delete')}
         </button>

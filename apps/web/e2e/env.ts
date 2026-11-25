@@ -9,6 +9,7 @@ export const env = {
   PHOTON_URL: 'http://localhost:3190/photon',
   ROUTING_URL: 'http://localhost:3190/osrm',
   ROUTING_INTERVAL_MS: '20',
+  WEATHER_URL: 'http://localhost:3190/met',
   MAP_STYLE_URL: 'http://localhost:3190/style.json',
   TERRAIN_URL: 'http://localhost:3190/terrain/{z}/{x}/{y}.png',
   SMTP_URL: 'smtp://localhost:3191',

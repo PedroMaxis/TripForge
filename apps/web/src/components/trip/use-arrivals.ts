@@ -1,5 +1,3 @@
-'use client'
-
 import { type Leg, lateFor, legKey, type TripItem } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { formatDistance, formatDuration } from '@/lib/travel'

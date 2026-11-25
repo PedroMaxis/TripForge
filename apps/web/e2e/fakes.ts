@@ -56,6 +56,23 @@ createServer((req, res) => {
       ],
     })
   }
+  if (url.pathname === '/met/complete') {
+    const start = Date.now() - 24 * 3_600_000
+    return json({
+      properties: {
+        timeseries: Array.from({ length: 96 }, (_, i) => ({
+          time: new Date(start + i * 3_600_000).toISOString(),
+          data: {
+            instant: { details: { air_temperature: 22 } },
+            next_6_hours: {
+              summary: { symbol_code: 'lightrain' },
+              details: { air_temperature_min: 18, air_temperature_max: 27 },
+            },
+          },
+        })),
+      },
+    })
+  }
   if (url.pathname === '/style.json') {
     return json({
       version: 8,

@@ -1,6 +1,6 @@
 'use client'
 
-import type { Trip } from '@tripforge/core'
+import { nextStop, type Trip } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { formatDate, formatRange } from '@/lib/dates'
@@ -8,10 +8,15 @@ import { itemsOf } from '@/lib/trip-store'
 import { Logo } from '../logo'
 import { Cover } from './cover'
 import { DayStrip } from './day-strip'
+import { NextStop } from './next-stop'
 import { Stop } from './stop'
+import { TripLinks } from './trip-links'
 import { type MapSources, TripMap } from './trip-map'
 import { useArrivals } from './use-arrivals'
 import { useLegs } from './use-legs'
+import { useNow } from './use-now'
+import { useWeather } from './use-weather'
+import { Weather } from './weather'
 
 const refreshMs = 10_000
 
@@ -71,6 +76,10 @@ export function SharedTrip({
   const [chosenId, setDayId] = useState(initialDayId)
   const [openId, setOpenId] = useState<string | null>(null)
   const legs = useLegs(trip, true, source)
+  const weather = useWeather(source)
+  const now = useNow(trip.timezone)
+  const today = now && trip.days.find((d) => d.date === now.date)
+  const next = now && today ? nextStop(itemsOf(trip, today.id), now.time) : null
 
   // The chosen day may have been taken away meanwhile.
   const day = trip.days.find((d) => d.id === chosenId) ?? trip.days[0]
@@ -148,6 +157,16 @@ export function SharedTrip({
               {trip.destination}, {formatRange(trip.startDate, trip.endDate, locale)}
             </p>
           </Cover>
+          {now && next && (
+            <NextStop
+              item={next}
+              time={now.time}
+              onOpen={() => {
+                choose(next.dayId)
+                setOpenId(next.id)
+              }}
+            />
+          )}
           {day && (
             <div className="px-4 pt-6 pb-3">
               <h2 className="text-2xl">{dayName(trip.days.indexOf(day))}</h2>
@@ -155,6 +174,7 @@ export function SharedTrip({
                 {formatDate(day.date, locale, { weekday: 'long', day: 'numeric', month: 'long' })}
                 {total && `, ${total}`}
               </p>
+              <Weather weather={weather[day.date]} />
             </div>
           )}
           {list.length === 0 ? (
@@ -185,6 +205,7 @@ export function SharedTrip({
               ))}
             </ol>
           )}
+          <TripLinks page={`/see/${token}`} source={source} member={false} />
         </div>
       </main>
     </div>
