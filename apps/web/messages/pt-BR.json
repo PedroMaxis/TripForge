@@ -197,10 +197,15 @@
     "link": "Link do convite",
     "copy": "Copiar",
     "copied": "Copiado",
-    "linkOnce": "Copie agora: ele não aparece de novo. Vale por 14 dias.",
     "expires": "Vale até {date}",
     "revoke": "Revogar link",
-    "failed": "Não deu certo. Tente de novo."
+    "failed": "Não deu certo. Tente de novo.",
+    "links": {
+      "editor": "Pode editar, com conta",
+      "viewer": "Só ver, sem precisar de conta"
+    },
+    "linkEdit": "Copie agora: ele não aparece de novo. Vale por 14 dias.",
+    "linkView": "Quem tiver o link vê o roteiro, o mapa e as notas, sem conta. O nome de ninguém aparece. Copie agora: ele não aparece de novo."
   },
   "Invite": {
     "as": {
@@ -214,7 +219,8 @@
       "expired": "Este convite expirou.",
       "ask": "Peça um novo link pra quem te enviou."
     },
-    "back": "Minhas viagens"
+    "back": "Minhas viagens",
+    "keep": "Guardar nas minhas viagens"
   },
   "Password": {
     "forgotTitle": "Esqueceu a senha?",

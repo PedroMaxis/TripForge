@@ -197,10 +197,15 @@
     "link": "Invite link",
     "copy": "Copy",
     "copied": "Copied",
-    "linkOnce": "Copy it now: it is not shown again. It works for 14 days.",
     "expires": "Works until {date}",
     "revoke": "Revoke link",
-    "failed": "That did not work. Please try again."
+    "failed": "That did not work. Please try again.",
+    "links": {
+      "editor": "Can edit, with an account",
+      "viewer": "View only, no account needed"
+    },
+    "linkEdit": "Copy it now: it is not shown again. It works for 14 days.",
+    "linkView": "Whoever has it sees the itinerary, the map and the notes, without an account. Nobody's name is shown. Copy it now: it is not shown again."
   },
   "Invite": {
     "as": {
@@ -214,7 +219,8 @@
       "expired": "This invite has expired.",
       "ask": "Ask whoever sent it for a new link."
     },
-    "back": "My trips"
+    "back": "My trips",
+    "keep": "Keep in my trips"
   },
   "Password": {
     "forgotTitle": "Forgot your password?",

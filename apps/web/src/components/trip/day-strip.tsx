@@ -20,12 +20,14 @@ export function DayStrip({
   current,
   dayName,
   onChoose,
+  ideas: withIdeas = true,
   className,
 }: {
   trip: Trip
   current: string | null
   dayName: (index: number) => string
   onChoose: (dayId: string | null) => void
+  ideas?: boolean
   className: string
 }) {
   const t = useTranslations('Trip')
@@ -46,14 +48,16 @@ export function DayStrip({
           bottom={t('stops', { count: itemsOf(trip, day.id).length })}
         />
       ))}
-      <Leg
-        dayId={null}
-        current={current === null}
-        onChoose={onChoose}
-        top={t('noDay')}
-        name={t('ideas')}
-        bottom={t('kept', { count: itemsOf(trip, null).length })}
-      />
+      {withIdeas && (
+        <Leg
+          dayId={null}
+          current={current === null}
+          onChoose={onChoose}
+          top={t('noDay')}
+          name={t('ideas')}
+          bottom={t('kept', { count: itemsOf(trip, null).length })}
+        />
+      )}
     </nav>
   )
 }

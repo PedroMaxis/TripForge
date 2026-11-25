@@ -1,9 +1,10 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
-import type { Role } from '@tripforge/core'
+import { parseDate, type Role, type Trip } from '@tripforge/core'
 import { and, asc, eq, gt, isNull } from 'drizzle-orm'
 import type { AnyDb } from './client'
 import { OperationError, record, type Tx } from './operations'
 import { invites, tripMembers, trips, users } from './schema'
+import { getTripForGuest } from './trips'
 
 export type InviteRole = Exclude<Role, 'owner'>
 
@@ -12,25 +13,37 @@ const isLive = () => and(isNull(invites.revokedAt), gt(invites.expiresAt, new Da
 
 async function requireOwner(db: AnyDb, userId: string, tripId: string) {
   const [trip] = await db
-    .select({ id: trips.id })
+    .select({ endDate: trips.endDate })
     .from(trips)
     .where(and(eq(trips.id, tripId), eq(trips.ownerId, userId)))
   if (!trip) throw new OperationError('forbidden')
+  return trip
+}
+
+const dayMs = 86_400_000
+const inviteDays = 14
+const daysAfterTrip = 30
+
+/** A link to look lasts past the trip, since looking along is what it is for. */
+function expiryOf(role: InviteRole, endDate: string) {
+  const soon = Date.now() + inviteDays * dayMs
+  const afterTrip = parseDate(endDate) + daysAfterTrip * dayMs
+  return new Date(role === 'viewer' ? Math.max(soon, afterTrip) : soon)
 }
 
 /** The token is shown once, in the link; only its hash is kept. */
-export async function createInvite(
-  db: AnyDb,
-  userId: string,
-  tripId: string,
-  { role, days }: { role: InviteRole; days: number },
-) {
-  await requireOwner(db, userId, tripId)
+export async function createInvite(db: AnyDb, userId: string, tripId: string, role: InviteRole) {
+  const trip = await requireOwner(db, userId, tripId)
   const token = randomBytes(32).toString('base64url')
-  const expiresAt = new Date(Date.now() + days * 86_400_000)
   const [created] = await db
     .insert(invites)
-    .values({ tripId, tokenHash: hash(token), role, expiresAt, createdBy: userId })
+    .values({
+      tripId,
+      tokenHash: hash(token),
+      role,
+      expiresAt: expiryOf(role, trip.endDate),
+      createdBy: userId,
+    })
     .returning({ id: invites.id })
   return { id: created!.id, token }
 }
@@ -73,6 +86,19 @@ export async function findInvite(db: AnyDb, token: string): Promise<FoundInvite>
     inviter: found.inviter,
     role: found.invite.role as InviteRole,
   }
+}
+
+export type SharedTrip =
+  | { status: 'ok'; trip: Trip }
+  | { status: 'unknown' | 'revoked' | 'expired' }
+
+/** What a view link shows to whoever has it. An edit link shows nothing this way. */
+export async function getSharedTrip(db: AnyDb, token: string): Promise<SharedTrip> {
+  const found = await findInvite(db, token)
+  if (found.status !== 'ok') return { status: found.status }
+  if (found.role !== 'viewer') return { status: 'unknown' }
+  const trip = await getTripForGuest(db, found.tripId)
+  return trip ? { status: 'ok', trip } : { status: 'unknown' }
 }
 
 async function lockTrip(tx: Tx, tripId: string) {

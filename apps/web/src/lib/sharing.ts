@@ -16,7 +16,6 @@ import { getSession } from './auth'
 import { db } from './db'
 import { env } from './env'
 
-const inviteDays = 14
 const role = z.enum(['editor', 'viewer'])
 const id = z.uuid()
 
@@ -32,12 +31,10 @@ const prefix = (locale: string) =>
 const refresh = () => revalidatePath('/[locale]/trips/[tripId]/people', 'page')
 
 export async function createInviteAction(tripId: string, wanted: InviteRole, locale: string) {
-  const { token } = await createInvite(db(), await userId(), id.parse(tripId), {
-    role: role.parse(wanted),
-    days: inviteDays,
-  })
+  const { token } = await createInvite(db(), await userId(), id.parse(tripId), role.parse(wanted))
   refresh()
-  return new URL(`${prefix(locale)}/invite/${token}`, env().APP_URL).href
+  const page = wanted === 'viewer' ? 'see' : 'invite'
+  return new URL(`${prefix(locale)}/${page}/${token}`, env().APP_URL).href
 }
 
 export async function revokeInviteAction(tripId: string, inviteId: string) {

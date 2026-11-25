@@ -3,10 +3,13 @@ import type { TripSummary } from '@tripforge/core'
 /** A trip's cover: the real contour lines of its destination. */
 export function Cover({
   trip,
+  source = `/api/trips/${trip.id}`,
   className,
   children,
 }: {
   trip: TripSummary
+  /** Where its drawing comes from. */
+  source?: string
   className: string
   children: React.ReactNode
 }) {
@@ -16,7 +19,7 @@ export function Cover({
         <img
           data-testid="cover"
           // The destination in the address keeps an old drawing from outliving a change.
-          src={`/api/trips/${trip.id}/relief?at=${trip.destinationLat},${trip.destinationLng}`}
+          src={`${source}/relief?at=${trip.destinationLat},${trip.destinationLng}`}
           alt=""
           className="absolute inset-0 size-full object-cover"
         />

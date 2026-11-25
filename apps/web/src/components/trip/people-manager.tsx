@@ -167,7 +167,7 @@ export function PeopleManager({
               >
                 {guestRoles.map((r) => (
                   <option key={r} value={r}>
-                    {t(`roles.${r}`)}
+                    {t(`links.${r}`)}
                   </option>
                 ))}
               </select>
@@ -207,7 +207,9 @@ export function PeopleManager({
                   {copied ? t('copied') : t('copy')}
                 </button>
               </div>
-              <p className="mt-2 text-sm text-ink-2">{t('linkOnce')}</p>
+              <p className="mt-2 text-sm text-ink-2">
+                {t(link.includes('/see/') ? 'linkView' : 'linkEdit')}
+              </p>
             </div>
           )}
           {invites.length > 0 && (
@@ -218,7 +220,7 @@ export function PeopleManager({
                   className="flex flex-wrap items-center gap-3 rounded-2xl px-3 py-2 hover:bg-mist"
                 >
                   <span className="min-w-0 flex-1">
-                    {t(`roles.${invite.role}`)}
+                    {t(`links.${invite.role === 'viewer' ? 'viewer' : 'editor'}`)}
                     <span className="block text-sm text-muted">
                       {t('expires', {
                         date: formatDate(invite.expiresOn, locale, { dateStyle: 'long' }),

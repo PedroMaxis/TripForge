@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 const pollMs = 2000
 
 /** The street routes between the stops, asked for as the trip changes and collected as they come. */
-export function useLegs(trip: Trip, settled: boolean) {
+export function useLegs(trip: Trip, settled: boolean, source: string) {
   const [legs, setLegs] = useState<Record<string, Leg>>({})
   const missing = tripLegs(trip.items)
     .map((l) => l.key)
@@ -19,7 +19,7 @@ export function useLegs(trip: Trip, settled: boolean) {
     let timer: ReturnType<typeof setTimeout> | undefined
     async function load() {
       try {
-        const res = await fetch(`/api/trips/${trip.id}/routes`)
+        const res = await fetch(`${source}/routes`)
         if (stopped || !res.ok) return
         const answer = (await res.json()) as { legs: Record<string, Leg>; pending: number }
         setLegs((current) => ({ ...current, ...answer.legs }))
@@ -33,7 +33,7 @@ export function useLegs(trip: Trip, settled: boolean) {
       stopped = true
       clearTimeout(timer)
     }
-  }, [missing, settled, trip.id])
+  }, [missing, settled, source])
 
   return legs
 }

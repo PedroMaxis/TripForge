@@ -1,9 +1,9 @@
 import { Link } from '@/i18n/navigation'
 
 /** An anvil with a map-pin hole: the trip is forged here. */
-export function Logo({ compact = false }: { compact?: boolean }) {
+export function Logo({ compact = false, href = '/trips' }: { compact?: boolean; href?: string }) {
   return (
-    <Link href="/trips" aria-label="TripForge" className="flex min-h-11 items-center gap-2">
+    <Link href={href} aria-label="TripForge" className="flex min-h-11 items-center gap-2">
       <svg
         viewBox="-1 -1 36 28"
         width="34"

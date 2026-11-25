@@ -4,62 +4,45 @@ A collaborative trip planner: a group builds the itinerary day by day, together 
 
 ![Two people plan the same trip: a stop added on a computer appears on a phone, and the phone's edits appear on the computer](docs/live.gif)
 
-> **Status:** ready to launch. Friends plan a trip together, live: itinerary, map with street routes, invites, presence, conflicts, offline edits and history. It can be installed on a phone.
+**[Try it](https://tripforge.duckdns.org)**
+
+## What it does
+
+- Day-by-day itinerary with drag and drop, ideas without a day yet, autosave and undo
+- Live editing: everyone sees changes as they happen, who is here and what they are editing
+- Map with the way between stops by street, with distance, time, and a warning when there is no time to get there
+- Place search, and a cover for each trip drawn from the real relief of its destination
+- Invites to edit, and view links that open straight on the itinerary, with no account
+- Offline edits are kept and sent later; when they clash, people choose
+- History of who changed what
+- Installable on a phone, in English and Brazilian Portuguese
 
 ## Stack
 
 | Part | Choice |
 | --- | --- |
-| Web | Next.js (App Router), TypeScript, Tailwind CSS |
-| Languages | next-intl, English and Brazilian Portuguese |
-| Sign-in | Better Auth with email and password |
-| Database | PostgreSQL 16 with Drizzle |
-| Realtime | Socket.IO on its own Node server |
+| Web | Next.js (App Router), TypeScript, Tailwind CSS, next-intl |
+| Sign-in | Better Auth |
+| Database | PostgreSQL with Drizzle |
+| Realtime | Socket.IO on its own Node server, fed by Postgres `LISTEN/NOTIFY` |
+| Map | MapLibre GL, with data from OpenStreetMap |
+| Landing page | Three.js, over the city's own terrain |
 | Tests | Vitest and Playwright |
-| Hosting | Docker Compose and Caddy on one ARM VM |
-
-## Layout
+| Hosting | Docker Compose on an ARM server, published by GitHub Actions |
 
 ```
 apps/web         Next.js app
 apps/realtime    Socket.IO server
-packages/core    Domain types, operations and the realtime token, shared by both apps
-packages/db      Drizzle schema, migrations and the only code that changes a trip
-infra            Dockerfile, Compose file, Caddyfile, backups and the server update
+packages/core    Domain types and rules, shared by both apps
+packages/db      Schema, migrations and the only code that changes a trip
+infra            Containers
 ```
 
-## Run it locally
+## How editing together works
 
-You need Node 22 or newer and pnpm. Docker is not required: `db:dev` starts a real Postgres 16 from an npm package.
+Every change is a small operation, such as moving a stop or renaming a day. The screen applies it at once; the server checks it, applies it in a transaction, gives it the next revision of the trip and tells everyone. Browsers apply changes strictly in order, and fill any gap when they reconnect. Sending the same operation twice has no effect, so retrying is always safe.
 
-```bash
-pnpm install
-cp .env.example .env     # fill in the two secrets
-pnpm db:dev              # keep running in its own terminal
-pnpm db:migrate
-pnpm dev                 # http://localhost:3000
-```
-
-## Checks
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm --filter @tripforge/web exec playwright install chromium   # once
-pnpm test:e2e
-```
-
-## How a trip changes
-
-Every change is a small operation (`item.move`, `item.update`, `day.update`...). The screen applies it at once and sends it; the server locks the trip, checks the role, applies it, gives it the next revision and logs it, all in one transaction. Each operation carries an id, so a retry is never applied twice. Order inside a day is a fractional index: moving a stop changes one row, and the server separates two stops dropped on the same spot.
-
-## How it stays live
-
-1. The browser applies a change at once, keeps it in a queue that survives a reload, and posts it.
-2. The server applies it in a transaction, gives it the next revision and calls `pg_notify`.
-3. The realtime server hears the notice, reads the new log entries and sends them, in order, to everyone with the trip open. Notices carry no data, so a lost one costs nothing.
-4. Each browser applies entries strictly by revision. A gap, a reconnection or a tab coming back is filled from `GET /api/trips/:id/log`.
+Order inside a day is a fractional index: moving a stop changes one row, and two stops dropped on the same spot are told apart by the server.
 
 | When | What happens |
 | --- | --- |
@@ -67,47 +50,33 @@ Every change is a small operation (`item.move`, `item.update`, `day.update`...).
 | Two people edit the same field online | The last to arrive wins, and the other is told |
 | An offline edit meets a newer one | The newer stays; the author sees both and chooses |
 | Someone edits a deleted stop | The deletion wins, with an undo |
-| Two stops land on the same spot | The server moves one right after the other |
-| Someone is removed | Their screen closes at once, and their invite links die |
+| Someone is removed | Their screen closes at once |
 
-## Outside services
+A conflict-free replicated data type would be more than this needs: an itinerary is a list of structured records, and these rules are easy to follow and to query.
 
-All of them are free, need no key and can be replaced with an environment variable.
+## Run it locally
 
-| What | Default | Variable |
-| --- | --- | --- |
-| Map | [OpenFreeMap](https://openfreemap.org) | `MAP_STYLE_URL` |
-| Place search | [Photon](https://photon.komoot.io) | `PHOTON_URL` |
-| Street routes | [OSRM at FOSSGIS](https://routing.openstreetmap.de) | `ROUTING_URL` (`off` draws straight lines) |
-| Relief | [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) | `TERRAIN_URL` |
-| Email | none, so password recovery is off | `SMTP_URL`, `MAIL_FROM` |
-
-The public Photon and OSRM servers are run on goodwill: searches are cached and limited per person, and routes go through one queue of at most one request a second and are stored forever. Host your own, or pay for one, before charging anyone.
-
-## How sockets are authenticated
-
-The web app exchanges the session cookie for a JWT that lasts five minutes (`GET /api/realtime-token`). The realtime server accepts a connection only with that token, closes the socket when it expires, and lets the client extend it with `session.renew`, for the same user only.
-
-## Deploy
-
-Every push to `main` runs the checks, boots the full Compose stack on an ARM runner and proves that a backup can be restored. If the repository variable `DEPLOY_ENABLED` is `true`, it also publishes the images to GHCR and updates the server over SSH.
-
-On the server, once: install Docker, open ports 80 and 443, create `/opt/tripforge` owned by the deploy user, save `infra/.env.example` there as `.env` with real values and mode 600, and authorize a key made only for deploys.
-
-Repository secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS` (the server's `/etc/ssh/ssh_host_ed25519_key.pub`, with the host name in front).
-
-The server reads the images with the job's own short-lived token, so nothing stays logged in.
-
-## Backups
-
-The database is saved every day at 06:00 UTC, checked, and kept for 14 days. Set `BACKUP_UPLOAD_URL` to also send each copy somewhere else with HTTP PUT; without it, copies live and die with the machine.
+You need Node 22 or newer and pnpm. Docker is not required: `db:dev` starts a real Postgres from an npm package.
 
 ```bash
-cd /opt/tripforge
-docker compose exec backup backup.sh                      # now
-docker compose exec backup ls /backups
-docker compose exec backup restore.sh tripforge-….dump    # replaces the database
+pnpm install
+cp .env.example .env     # fill it in
+pnpm db:dev              # keep running in its own terminal
+pnpm db:migrate
+pnpm dev
 ```
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test
+pnpm --filter @tripforge/web exec playwright install chromium   # once
+pnpm test:e2e
+```
+
+The end-to-end tests replace every outside service with a local stand-in, and use two browsers at once for live editing.
+
+## Credits
+
+Map by [OpenFreeMap](https://openfreemap.org) and [OpenMapTiles](https://openmaptiles.org), data from [OpenStreetMap](https://www.openstreetmap.org/copyright). Place search by [Photon](https://photon.komoot.io), routes by [OSRM at FOSSGIS](https://routing.openstreetmap.de), relief from Mapzen and NASA SRTM.
 
 ## License
 

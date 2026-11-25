@@ -102,40 +102,62 @@ export async function listTrips(db: AnyDb, userId: string): Promise<TripSummary[
   return rows.map((r) => toSummary(r.trip, people))
 }
 
+const readSnapshot = { isolationLevel: 'repeatable read' } as const
+
+async function loadTrip(
+  db: AnyDb,
+  row: typeof trips.$inferSelect,
+  role: Trip['role'],
+  people: Awaited<ReturnType<typeof members>>,
+): Promise<Trip> {
+  const dayRows = await db
+    .select()
+    .from(days)
+    .where(eq(days.tripId, row.id))
+    .orderBy(asc(days.date))
+  const itemRows = await db
+    .select()
+    .from(items)
+    .where(and(eq(items.tripId, row.id), isNull(items.deletedAt)))
+  return {
+    ...toSummary(row, people),
+    timezone: row.timezone,
+    revision: row.revision,
+    role,
+    days: dayRows.map(({ id, date, title, notes }) => ({ id, date, title, notes })),
+    items: itemRows.map(toTripItem).sort(byPosition),
+  }
+}
+
 /** The whole trip as one person sees it, or null when it is not theirs to see. */
 export async function getTrip(db: AnyDb, userId: string, tripId: string): Promise<Trip | null> {
   if (!isUuid(tripId)) return null
   // One snapshot, so the revision always matches the items.
-  return db.transaction(
-    async (tx) => {
-      const [found] = await tx
-        .select({ trip: trips, role: tripMembers.role })
-        .from(trips)
-        .innerJoin(
-          tripMembers,
-          and(eq(tripMembers.tripId, trips.id), eq(tripMembers.userId, userId)),
-        )
-        .where(eq(trips.id, tripId))
-      if (!found) return null
-      const people = await members(tx, [tripId])
-      const dayRows = await tx
-        .select()
-        .from(days)
-        .where(eq(days.tripId, tripId))
-        .orderBy(asc(days.date))
-      const itemRows = await tx
-        .select()
-        .from(items)
-        .where(and(eq(items.tripId, tripId), isNull(items.deletedAt)))
-      return {
-        ...toSummary(found.trip, people),
-        timezone: found.trip.timezone,
-        revision: found.trip.revision,
-        role: found.role,
-        days: dayRows.map(({ id, date, title, notes }) => ({ id, date, title, notes })),
-        items: itemRows.map(toTripItem).sort(byPosition),
-      }
-    },
-    { isolationLevel: 'repeatable read' },
-  )
+  return db.transaction(async (tx) => {
+    const [found] = await tx
+      .select({ trip: trips, role: tripMembers.role })
+      .from(trips)
+      .innerJoin(tripMembers, and(eq(tripMembers.tripId, trips.id), eq(tripMembers.userId, userId)))
+      .where(eq(trips.id, tripId))
+    if (!found) return null
+    return loadTrip(tx, found.trip, found.role, await members(tx, [tripId]))
+  }, readSnapshot)
+}
+
+/**
+ * The itinerary for someone without an account: the days and their stops, and nothing about the
+ * people. Whoever calls it has checked that a link allows it.
+ */
+export async function getTripForGuest(db: AnyDb, tripId: string): Promise<Trip | null> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx.select().from(trips).where(eq(trips.id, tripId))
+    if (!row) return null
+    const trip = await loadTrip(tx, row, 'viewer', [])
+    return {
+      ...trip,
+      items: trip.items
+        .filter((item) => item.dayId !== null)
+        .map((item) => ({ ...item, updatedBy: null })),
+    }
+  }, readSnapshot)
 }

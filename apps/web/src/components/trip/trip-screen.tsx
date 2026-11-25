@@ -17,13 +17,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { lateFor, legKey, type Operation, type Place, type Trip } from '@tripforge/core'
+import type { Operation, Place, Trip } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { Link } from '@/i18n/navigation'
 import { formatDate, formatRange } from '@/lib/dates'
-import { formatDistance, formatDuration } from '@/lib/travel'
 import { createTripApi } from '@/lib/trip-api'
 import { createTripStore, itemsOf, type Notice, positionAt } from '@/lib/trip-store'
 import { Logo } from '../logo'
@@ -36,6 +35,7 @@ import { DayStrip, isLeg, legDay } from './day-strip'
 import { People } from './people'
 import { Stop } from './stop'
 import { type MapSources, TripMap } from './trip-map'
+import { useArrivals } from './use-arrivals'
 import { useLegs } from './use-legs'
 import { useRealtime } from './use-realtime'
 
@@ -94,7 +94,7 @@ export function TripScreen({
   const editorOf = (itemId: string) =>
     present.find((p) => p.editing === itemId && p.userId !== userId)?.name ?? null
 
-  const legs = useLegs(trip, sync === 'saved')
+  const legs = useLegs(trip, sync === 'saved', `/api/trips/${trip.id}`)
   const { destinationLat, destinationLng } = trip
   const near = useMemo<Near>(
     () =>
@@ -105,30 +105,7 @@ export function TripScreen({
   )
   const hasMap = near !== null || trip.items.some((i) => i.lat !== null)
 
-  // How to reach each stop from the last one that is on the map.
-  let meters = 0
-  let previous: (typeof list)[number] | undefined
-  const arrivals = list.map((item, index) => {
-    const from = previous
-    if (item.lat !== null) previous = item
-    if (!day || index === 0) return { travel: null, late: null }
-    const leg =
-      from?.lat != null && from.lng !== null && item.lat !== null && item.lng !== null
-        ? legs[legKey({ lat: from.lat, lng: from.lng }, { lat: item.lat, lng: item.lng })]
-        : undefined
-    meters += leg?.meters ?? 0
-    const before = list[index - 1]
-    const late = before && lateFor(before, item, leg && from === before ? leg.seconds : null)
-    return {
-      travel: leg
-        ? t(`travel.${leg.mode}`, {
-            time: formatDuration(leg.seconds),
-            distance: formatDistance(leg.meters, locale),
-          })
-        : null,
-      late: late ? t(`late.${late}`) : null,
-    }
-  })
+  const { arrivals, total } = useArrivals(list, day !== null, legs)
 
   useEffect(() => {
     if (!undo && !notice) return
@@ -349,7 +326,7 @@ export function TripScreen({
                         month: 'long',
                       })
                     : t('ideasBody')}
-                  {meters > 0 && `, ${t('byStreet', { distance: formatDistance(meters, locale) })}`}
+                  {total && `, ${total}`}
                 </p>
               </div>
               {canEdit && (

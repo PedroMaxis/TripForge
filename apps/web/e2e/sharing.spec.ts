@@ -23,11 +23,14 @@ async function openSharing(page: Page) {
   return tripId
 }
 
-async function createLink(page: Page, role: 'Can edit' | 'View only') {
+async function createLink(
+  page: Page,
+  role: 'Can edit, with an account' | 'View only, no account needed',
+) {
   await page.getByLabel('People with the link').selectOption({ label: role })
   await page.getByRole('button', { name: 'Create link' }).click()
   const link = page.getByLabel('Invite link')
-  await expect(link).toHaveValue(/\/invite\/[\w-]{40,}$/)
+  await expect(link).toHaveValue(/\/(invite|see)\/[\w-]{40,}$/)
   return link.inputValue()
 }
 
@@ -39,7 +42,7 @@ async function guest(browser: Browser, name: string) {
 
 test('a friend opens the link and joins as an editor', async ({ page, browser }) => {
   const tripId = await openSharing(page)
-  const link = await createLink(page, 'Can edit')
+  const link = await createLink(page, 'Can edit, with an account')
   const ana = await guest(browser, 'Ana')
   await ana.page.goto(link)
   await expect(ana.page.getByText('Pedro invited you to edit')).toBeVisible()
@@ -52,7 +55,7 @@ test('a friend opens the link and joins as an editor', async ({ page, browser })
 
 test('someone without an account signs up and lands on the invite', async ({ page, browser }) => {
   const tripId = await openSharing(page)
-  const link = await createLink(page, 'View only')
+  const link = await createLink(page, 'Can edit, with an account')
   const context = await browser.newContext({
     baseURL: env.APP_URL,
     extraHTTPHeaders: { 'x-forwarded-for': `10.2.${randomInt(256)}.9` },
@@ -67,12 +70,12 @@ test('someone without an account signs up and lands on the invite', async ({ pag
   await fresh.getByRole('button', { name: 'Create account' }).click()
   await fresh.getByRole('button', { name: 'Join the trip' }).click()
   await expect(fresh).toHaveURL(new RegExp(`/trips/${tripId}`))
-  await expect(fresh.getByText('View only')).toBeVisible()
+  await expect(fresh.getByRole('button', { name: 'Add stop' })).toBeVisible()
 })
 
 test('a revoked link stops working', async ({ page, browser }) => {
   await openSharing(page)
-  const link = await createLink(page, 'Can edit')
+  const link = await createLink(page, 'Can edit, with an account')
   await page.getByRole('button', { name: 'Revoke link' }).click()
   await expect(page.getByRole('button', { name: 'Revoke link' })).toHaveCount(0)
   const ana = await guest(browser, 'Ana')
@@ -87,7 +90,7 @@ test('a made-up link is not found', async ({ page }) => {
 
 test('the owner changes a role and removes someone', async ({ page, browser }) => {
   const tripId = await openSharing(page)
-  const link = await createLink(page, 'Can edit')
+  const link = await createLink(page, 'Can edit, with an account')
   const ana = await guest(browser, 'Ana')
   await ana.page.goto(link)
   await ana.page.getByRole('button', { name: 'Join the trip' }).click()
@@ -112,7 +115,7 @@ test('the owner changes a role and removes someone', async ({ page, browser }) =
 
 test('a guest sees the people, manages none, and can leave', async ({ page, browser }) => {
   const tripId = await openSharing(page)
-  const link = await createLink(page, 'View only')
+  const link = await createLink(page, 'Can edit, with an account')
   const ana = await guest(browser, 'Ana')
   await ana.page.goto(link)
   await ana.page.getByRole('button', { name: 'Join the trip' }).click()

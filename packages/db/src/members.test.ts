@@ -1,14 +1,17 @@
+import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
-import { activityLog, invites, tripMembers, users } from './index'
+import { activityLog, invites, tripMembers, trips, users } from './index'
 import {
   acceptInvite,
   changeMember,
   createInvite,
   findInvite,
+  getSharedTrip,
   listInvites,
   revokeInvite,
 } from './members'
+import { applyOperation } from './operations'
 import { createTestDb, type TestDb } from './testing'
 import { createTrip, getTrip } from './trips'
 
@@ -40,8 +43,7 @@ beforeEach(async () => {
   ])
 })
 const code = (c: string) => ({ code: c })
-const invite = (role: 'editor' | 'viewer' = 'editor') =>
-  createInvite(t.db, 'owner', tripId, { role, days: 7 })
+const invite = (role: 'editor' | 'viewer' = 'editor') => createInvite(t.db, 'owner', tripId, role)
 const roleOf = async (userId: string) =>
   (
     await t.db
@@ -58,9 +60,7 @@ describe('inviting', () => {
   })
   test.each(['editor', 'viewer', 'guest'])('an %s cannot invite, list or revoke', async (who) => {
     const { id } = await invite()
-    await expect(
-      createInvite(t.db, who, tripId, { role: 'viewer', days: 7 }),
-    ).rejects.toMatchObject(code('forbidden'))
+    await expect(createInvite(t.db, who, tripId, 'viewer')).rejects.toMatchObject(code('forbidden'))
     await expect(listInvites(t.db, who, tripId)).rejects.toMatchObject(code('forbidden'))
     await expect(revokeInvite(t.db, who, tripId, id)).rejects.toMatchObject(code('forbidden'))
   })
@@ -179,5 +179,99 @@ describe('members', () => {
     await expect(changeMember(t.db, 'owner', tripId, 'guest', 'viewer')).rejects.toMatchObject(
       code('not_found'),
     )
+  })
+})
+
+describe('seeing without an account', () => {
+  test('a view link opens the trip, and tells nothing about the people', async () => {
+    const { token } = await invite('viewer')
+    const shared = await getSharedTrip(t.db, token)
+    expect(shared).toMatchObject({
+      status: 'ok',
+      trip: { id: tripId, title: 'BH', role: 'viewer', members: [] },
+    })
+    for (const name of ['owner', 'editor', '@example.com'])
+      expect(JSON.stringify(shared)).not.toContain(`"${name}"`)
+  })
+  test('the itinerary comes without ideas, and without who changed it last', async () => {
+    const { token } = await invite('viewer')
+    const [day] = (await getTrip(t.db, 'owner', tripId))!.days
+    const itemId = randomUUID()
+    const ideaId = randomUUID()
+    await applyOperation(t.db, {
+      userId: 'editor',
+      tripId,
+      opId: randomUUID(),
+      op: {
+        type: 'item.create',
+        itemId: ideaId,
+        dayId: null,
+        position: 'a0',
+        title: 'Ideia',
+        kind: 'other',
+      },
+    })
+    await applyOperation(t.db, {
+      userId: 'editor',
+      tripId,
+      opId: randomUUID(),
+      op: {
+        type: 'item.create',
+        itemId,
+        dayId: day!.id,
+        position: 'a0',
+        title: 'Museu',
+        kind: 'other',
+      },
+    })
+    const shared = await getSharedTrip(t.db, token)
+    expect(shared.status === 'ok' && shared.trip.items).toMatchObject([
+      { title: 'Museu', updatedBy: null },
+    ])
+  })
+  test('an edit link does not, and neither does nonsense', async () => {
+    expect(await getSharedTrip(t.db, (await invite('editor')).token)).toEqual({ status: 'unknown' })
+    expect(await getSharedTrip(t.db, 'nope')).toEqual({ status: 'unknown' })
+  })
+  test('a revoked or expired link shows nothing', async () => {
+    const a = await invite('viewer')
+    await revokeInvite(t.db, 'owner', tripId, a.id)
+    expect(await getSharedTrip(t.db, a.token)).toEqual({ status: 'revoked' })
+    const b = await invite('viewer')
+    await t.db
+      .update(invites)
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .where(eq(invites.id, b.id))
+    expect(await getSharedTrip(t.db, b.token)).toEqual({ status: 'expired' })
+  })
+  test('removing a member kills view links too', async () => {
+    const { token } = await invite('viewer')
+    await changeMember(t.db, 'owner', tripId, 'editor', null)
+    expect(await getSharedTrip(t.db, token)).toEqual({ status: 'revoked' })
+  })
+})
+
+describe('how long a link lasts', () => {
+  const daysLeft = async (id: string) => {
+    const [row] = await t.db.select().from(invites).where(eq(invites.id, id))
+    return Math.round((row!.expiresAt.getTime() - Date.now()) / 86_400_000)
+  }
+  test('an edit link, two weeks', async () => {
+    expect(await daysLeft((await invite('editor')).id)).toBe(14)
+  })
+  test('a view link, until a month after the trip', async () => {
+    const { shiftDate } = await import('@tripforge/core')
+    const end = shiftDate(new Date().toISOString().slice(0, 10), 100)
+    await t.db.update(trips).set({ startDate: end, endDate: end }).where(eq(trips.id, tripId))
+    const left = await daysLeft((await invite('viewer')).id)
+    expect(left).toBeGreaterThanOrEqual(130)
+    expect(left).toBeLessThanOrEqual(131)
+  })
+  test('a view link of a past trip, still two weeks', async () => {
+    await t.db
+      .update(trips)
+      .set({ startDate: '2020-01-01', endDate: '2020-01-02' })
+      .where(eq(trips.id, tripId))
+    expect(await daysLeft((await invite('viewer')).id)).toBe(14)
   })
 })
