@@ -65,7 +65,7 @@ export function Toast({
   return (
     <div
       role="status"
-      className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:bottom-36"
+      className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-36"
     >
       {(undo || notice) && (
         <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-3xl bg-ink py-1 pr-1 pl-5 text-sm text-paper">

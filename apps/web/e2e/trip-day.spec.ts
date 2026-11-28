@@ -114,6 +114,7 @@ test('puts a day in its shortest order, and back', async ({ page }) => {
 test('goes to a calendar and to paper, with or without an account', async ({ page, browser }) => {
   const { tripId, token } = await makeTrip(page)
   await page.goto(`/en/trips/${tripId}`)
+  await page.getByRole('button', { name: 'More' }).click()
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('link', { name: 'Add to a calendar' }).click(),
@@ -145,6 +146,7 @@ test('goes to a calendar and to paper, with or without an account', async ({ pag
 test('makes a copy of a trip on other dates', async ({ page }) => {
   const { tripId } = await makeTrip(page)
   await page.goto(`/en/trips/${tripId}`)
+  await page.getByRole('button', { name: 'More' }).click()
   await page.getByRole('link', { name: 'Duplicate' }).click()
   await page.getByLabel('Trip name').fill('BH no inverno')
   await page.getByLabel('First day').fill('2031-07-01')
@@ -154,4 +156,20 @@ test('makes a copy of a trip on other dates', async ({ page }) => {
   await expect(page.getByText('July 1 – 3, 2031')).toBeVisible()
   await page.getByRole('navigation', { name: 'Trip days' }).getByText('Day 2').click()
   await expect.poll(() => names(page)).toHaveLength(4)
+})
+
+test('the sections of a trip are one tap away, and More closes by itself', async ({ page }) => {
+  const { tripId } = await makeTrip(page)
+  await page.goto(`/en/trips/${tripId}`)
+  const nav = page.getByRole('navigation', { name: 'Trip sections' })
+  await expect(nav.getByRole('link', { name: 'Plan' })).toHaveAttribute('aria-current', 'page')
+  await nav.getByRole('button', { name: 'More' }).click()
+  await expect(nav.getByRole('link', { name: 'Settings' })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(nav.getByRole('link', { name: 'Settings' })).toBeHidden()
+  await nav.getByRole('link', { name: 'People' }).click()
+  await expect(page).toHaveURL(/\/people$/)
+  await expect(
+    page.getByRole('navigation', { name: 'Trip sections' }).getByRole('link', { name: 'People' }),
+  ).toHaveAttribute('aria-current', 'page')
 })

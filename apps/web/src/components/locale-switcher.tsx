@@ -12,20 +12,22 @@ export function LocaleSwitcher() {
   const pathname = usePathname()
   const t = useTranslations('LocaleSwitcher')
   return (
+    // The language comes from the browser; this is only the way to the other one.
     <nav aria-label={t('label')} className="flex gap-1 text-sm">
-      {routing.locales.map((locale) => (
-        <Link
-          key={locale}
-          href={pathname}
-          locale={locale}
-          hrefLang={locale}
-          lang={locale}
-          aria-current={locale === current ? 'true' : undefined}
-          className="rounded-full px-3 py-2 text-ink-2 hover:bg-mist aria-[current]:bg-soft aria-[current]:text-ink"
-        >
-          {names[locale]}
-        </Link>
-      ))}
+      {routing.locales
+        .filter((locale) => locale !== current)
+        .map((locale) => (
+          <Link
+            key={locale}
+            href={pathname}
+            locale={locale}
+            hrefLang={locale}
+            lang={locale}
+            className="rounded-full px-3 py-2 text-ink-2 hover:bg-mist"
+          >
+            {names[locale]}
+          </Link>
+        ))}
     </nav>
   )
 }

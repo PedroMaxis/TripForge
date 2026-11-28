@@ -109,7 +109,6 @@
     "add": "Add",
     "dayName": "Day name",
     "viewOnly": "View only",
-    "settings": "Settings",
     "emptyDay": "This day is free",
     "emptyDayBody": "Add a stop or drag one from another day.",
     "emptyDayViewer": "Nothing planned yet.",
@@ -141,7 +140,6 @@
       "other": "Other"
     },
     "invite": "Invite",
-    "people": "People",
     "byStreet": "{distance} by street",
     "travel": {
       "foot": "{time} on foot, {distance}",
@@ -182,9 +180,6 @@
     "duplicate": "Duplicate",
     "shorten": "Shorten the way by about {distance}",
     "ordered": "{title} is in a new order",
-    "money": "Expenses",
-    "lists": "Lists",
-    "group": "Group",
     "paid": "{title} marked as paid",
     "allTrips": "Trips",
     "newItemPlaceholder": "Search a place or write what to do",
@@ -199,6 +194,19 @@
     "back": "Back to the day",
     "terrainCredit": "Relief: Mapzen, NASA SRTM",
     "routeCredit": "Routes: OSRM, FOSSGIS"
+  },
+  "TripNav": {
+    "label": "Trip sections",
+    "plan": "Plan",
+    "money": "Expenses",
+    "lists": "Lists",
+    "people": "People",
+    "more": "More",
+    "settings": "Settings",
+    "history": "History",
+    "duplicate": "Duplicate",
+    "print": "Print",
+    "calendar": "Add to a calendar"
   },
   "People": {
     "title": "People",

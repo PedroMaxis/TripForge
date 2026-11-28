@@ -109,7 +109,6 @@
     "add": "Adicionar",
     "dayName": "Nome do dia",
     "viewOnly": "Só leitura",
-    "settings": "Ajustes",
     "emptyDay": "Este dia está livre",
     "emptyDayBody": "Adicione uma parada ou arraste uma de outro dia.",
     "emptyDayViewer": "Nada planejado ainda.",
@@ -141,7 +140,6 @@
       "other": "Outro"
     },
     "invite": "Convidar",
-    "people": "Pessoas",
     "byStreet": "{distance} pelas ruas",
     "travel": {
       "foot": "{time} a pé, {distance}",
@@ -182,9 +180,6 @@
     "duplicate": "Duplicar",
     "shorten": "Encurtar o caminho em cerca de {distance}",
     "ordered": "{title} está em nova ordem",
-    "money": "Gastos",
-    "lists": "Listas",
-    "group": "Grupo",
     "paid": "{title} marcado como pago",
     "allTrips": "Viagens",
     "newItemPlaceholder": "Busque um lugar ou escreva o que fazer",
@@ -199,6 +194,19 @@
     "back": "Voltar ao dia",
     "terrainCredit": "Relevo: Mapzen, NASA SRTM",
     "routeCredit": "Rotas: OSRM, FOSSGIS"
+  },
+  "TripNav": {
+    "label": "Seções da viagem",
+    "plan": "Roteiro",
+    "money": "Gastos",
+    "lists": "Listas",
+    "people": "Pessoas",
+    "more": "Mais",
+    "settings": "Ajustes",
+    "history": "Histórico",
+    "duplicate": "Duplicar",
+    "print": "Imprimir",
+    "calendar": "Salvar no calendário"
   },
   "People": {
     "title": "Pessoas",

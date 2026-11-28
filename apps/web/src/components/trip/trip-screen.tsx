@@ -34,8 +34,8 @@ import { DayStrip, isLeg, legDay } from './day-strip'
 import { NextStop } from './next-stop'
 import { People } from './people'
 import { Stop } from './stop'
-import { TripLinks } from './trip-links'
 import { type MapSources, TripMap } from './trip-map'
+import { TripNav } from './trip-nav'
 import { Revoked, SyncStatus, Toast } from './trip-status'
 import { useArrivals } from './use-arrivals'
 import { useLegs } from './use-legs'
@@ -215,15 +215,16 @@ export function TripScreen({
             : 'grid-rows-[auto_auto_minmax(0,1fr)]'
         }`}
       >
-        <header className="col-span-full flex items-center gap-3 px-4 py-2 md:gap-6 md:px-6">
+        <header className="col-span-full flex items-center gap-2 px-4 py-2 md:gap-6 md:px-6">
           <span className="max-md:hidden">
             <Logo />
           </span>
           <Link
             href="/trips"
-            className="-ml-2 flex min-h-11 items-center gap-1 rounded-full px-2 font-medium hover:bg-mist md:hidden"
+            aria-label={t('allTrips')}
+            className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-mist md:hidden"
           >
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
               <path
                 d="M10 3 5 8l5 5"
                 fill="none"
@@ -233,27 +234,29 @@ export function TripScreen({
                 strokeLinejoin="round"
               />
             </svg>
-            {t('allTrips')}
           </Link>
+          <p className="min-w-0 truncate font-display text-xl md:hidden" aria-hidden="true">
+            {trip.title}
+          </p>
           <SyncStatus sync={sync} quiet={!canEdit} />
-          <div className="ml-auto flex items-center gap-3">
+          <TripNav
+            tripId={trip.id}
+            group={trip.group !== null}
+            canEdit={canEdit}
+            className="md:ml-auto"
+          />
+          <div className="ml-auto flex shrink-0 items-center gap-3 md:ml-0">
             {!canEdit && (
               <span className="rounded-full bg-soft px-3 py-1 text-sm whitespace-nowrap">
                 {t('viewOnly')}
               </span>
             )}
-            <span className="max-sm:hidden">
+            <span className="max-lg:hidden">
               <People members={trip.members} online={online} />
             </span>
-            <Link
-              href={`/trips/${trip.id}/people`}
-              className={`btn ${trip.role === 'owner' ? 'btn-primary' : ''}`}
-            >
-              {trip.role === 'owner' ? t('invite') : t('people')}
-            </Link>
-            {canEdit && (
-              <Link href={`/trips/${trip.id}/settings`} className="btn">
-                {t('settings')}
+            {trip.role === 'owner' && (
+              <Link href={`/trips/${trip.id}/people`} className="btn btn-primary">
+                {t('invite')}
               </Link>
             )}
           </div>
@@ -291,20 +294,10 @@ export function TripScreen({
               <p className="mt-2 text-sm text-ink-2">
                 {trip.destination}, {formatRange(trip.startDate, trip.endDate, locale)}
               </p>
-              <div className="mt-3 sm:hidden">
+              <div className="mt-3 lg:hidden">
                 <People members={trip.members} online={online} />
               </div>
             </Cover>
-            {trip.group && (
-              <nav aria-label={t('group')} className="flex gap-2 px-2 pt-3">
-                <Link href={`${page}/money`} className="btn">
-                  {t('money')}
-                </Link>
-                <Link href={`${page}/lists`} className="btn">
-                  {t('lists')}
-                </Link>
-              </nav>
-            )}
             {now && next && (
               <NextStop
                 item={next}
@@ -446,7 +439,6 @@ export function TripScreen({
                 </button>
               </p>
             )}
-            <TripLinks page={page} source={source} member />
           </div>
         </main>
       </div>

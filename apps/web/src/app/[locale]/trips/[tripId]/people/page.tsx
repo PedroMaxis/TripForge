@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
 import { PeopleManager } from '@/components/trip/people-manager'
+import { TripNav } from '@/components/trip/trip-nav'
 import { Link, redirect } from '@/i18n/navigation'
 import { getSession } from '@/lib/auth'
 import { db } from '@/lib/db'
@@ -17,7 +18,10 @@ export default async function PeoplePage({ params }: { params: Promise<{ tripId:
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-5xl px-4 pt-6 pb-16">
+      <div className="mx-auto max-w-5xl px-4 max-md:contents">
+        <TripNav tripId={trip.id} group={trip.group !== null} canEdit={trip.role !== 'viewer'} />
+      </div>
+      <main className="mx-auto max-w-5xl px-4 pt-6 pb-24">
         <h1 className="text-4xl">{t('title')}</h1>
         <p className="mt-2 mb-8">
           <Link href={`/trips/${trip.id}`} className="text-accent underline underline-offset-4">
