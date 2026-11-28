@@ -30,6 +30,7 @@ export default async function PeoplePage({ params }: { params: Promise<{ tripId:
         </p>
         <PeopleManager
           tripId={trip.id}
+          tripTitle={trip.title}
           isOwner={trip.role === 'owner'}
           selfId={session.user.id}
           members={trip.members}

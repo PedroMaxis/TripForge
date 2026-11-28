@@ -136,3 +136,14 @@ test('sign-in only ever continues to an invite', async ({ page }) => {
     await expect(page).toHaveURL('/en/trips')
   }
 })
+
+test('the link goes out on WhatsApp with a message that says what it is', async ({ page }) => {
+  await openSharing(page)
+  const link = await createLink(page, 'Can edit, with an account')
+  const send = page.getByRole('link', { name: 'Send on WhatsApp' })
+  const href = new URL((await send.getAttribute('href'))!)
+  expect(href.origin).toBe('https://wa.me')
+  const text = href.searchParams.get('text')!
+  expect(text).toContain('Come plan')
+  expect(text).toContain(link)
+})

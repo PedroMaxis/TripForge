@@ -29,7 +29,9 @@ async function ask(page: Page, email: string) {
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send the link' }).click()
   await expect(
-    page.getByText('If there is an account with this email, the link is on its way.'),
+    page.getByText(
+      'If there is an account with this email, the link is on its way. Check the spam folder too.',
+    ),
   ).toBeVisible()
 }
 

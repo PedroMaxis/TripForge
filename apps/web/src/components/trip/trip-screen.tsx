@@ -383,7 +383,29 @@ export function TripScreen({
               )}
             </div>
 
-            {list.length === 0 ? (
+            {list.length === 0 && canEdit && day && trip.items.length === 0 ? (
+              <div className="mx-2 rounded-2xl bg-mist px-6 py-8">
+                <h3 className="text-xl">{t('start.title')}</h3>
+                {/* Paragraphs, not a list: the stops are the lists of this page. */}
+                <div className="mt-3 grid gap-2 text-ink-2">
+                  <p>1. {t('start.stops')}</p>
+                  <p>
+                    2. {t('start.people')}
+                    {trip.role === 'owner' && (
+                      <>
+                        {' '}
+                        <Link
+                          href={`/trips/${trip.id}/people`}
+                          className="font-medium text-accent underline underline-offset-4"
+                        >
+                          {t('invite')}
+                        </Link>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            ) : list.length === 0 ? (
               <div className="mx-2 rounded-2xl bg-mist px-6 py-10">
                 <h3 className="text-xl">{day ? t('emptyDay') : t('emptyIdeas')}</h3>
                 <p className="mt-2 text-ink-2">

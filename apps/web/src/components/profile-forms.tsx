@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { authClient } from '@/lib/auth-client'
+import { forgetTrips } from '@/lib/offline-trips'
 import { Field } from './account-form'
 
 const formClass = 'flex max-w-sm flex-col gap-4'
@@ -134,6 +135,7 @@ export function DeleteAccount() {
           body: JSON.stringify({ password, locale }),
         }).catch(() => null)
         if (res?.ok) {
+          await forgetTrips()
           router.replace('/')
           router.refresh()
           return

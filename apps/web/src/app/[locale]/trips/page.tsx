@@ -2,10 +2,10 @@ import type { TripSummary } from '@tripforge/core'
 import { listTrips } from '@tripforge/db'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
+import { SignOutButton } from '@/components/sign-out-button'
 import { Cover } from '@/components/trip/cover'
 import { People } from '@/components/trip/people'
 import { Link, redirect } from '@/i18n/navigation'
-import { signOut } from '@/lib/actions'
 import { getSession } from '@/lib/auth'
 import { formatRange, todayIn } from '@/lib/dates'
 import { db } from '@/lib/db'
@@ -55,11 +55,7 @@ export default async function TripsPage() {
         <Link href="/account" className="py-3 text-sm hover:text-accent">
           {session.user.name}
         </Link>
-        <form action={signOut.bind(null, locale)}>
-          <button type="submit" className="min-h-11 text-sm text-ink-2 hover:text-ink">
-            {t('signOut')}
-          </button>
-        </form>
+        <SignOutButton />
       </Header>
       <main className="mx-auto max-w-5xl px-4 pt-6 pb-16">
         <div className="flex flex-wrap items-center justify-between gap-4">

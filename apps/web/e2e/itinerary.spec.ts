@@ -88,7 +88,7 @@ test('a trip that ends before it starts is refused with a reason', async ({ page
   await page.getByLabel('Last day').fill('2027-03-04')
   await page.getByRole('button', { name: 'Create trip' }).click()
   await expect(
-    page.getByText('The last day must come after the first, up to 90 days.'),
+    page.getByText('The last day must come after the first, and a trip can be up to 90 days.'),
   ).toBeVisible()
   await expect(page.getByLabel('Trip name')).toHaveValue('BH')
 })
@@ -304,4 +304,12 @@ test('a change made while the connection drops is sent when it returns', async (
   await saved(page)
   await page.reload()
   await expect.poll(() => names(page)).toEqual(['Museu', 'Parque'])
+})
+
+test('a new trip says where to start, until the first stop', async ({ page }) => {
+  await openTrip(page)
+  await expect(page.getByRole('heading', { name: 'Where to start' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Invite' }).last()).toBeVisible()
+  await addStop(page, 'Mercado Central')
+  await expect(page.getByRole('heading', { name: 'Where to start' })).toHaveCount(0)
 })

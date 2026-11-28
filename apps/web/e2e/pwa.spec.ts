@@ -1,4 +1,7 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
+import { createDb, createTrip, trips } from '@tripforge/db'
+import { eq } from 'drizzle-orm'
+import { env } from './env'
 import { signIn } from './session'
 
 test('can be installed: manifest, icons and theme', async ({ page, request }) => {
@@ -61,19 +64,70 @@ test('keeps trying when the connection says it is back but is not quite', async 
   expect(failures).toBeGreaterThan(1)
 })
 
-test('the service worker keeps no private page or answer', async ({ page, context }) => {
-  await signIn(context, 'Ana')
-  await page.goto('/en/trips')
-  await page.evaluate(() => navigator.serviceWorker.ready)
-  await page.reload()
-  const kept = await page.evaluate(async () => {
+const keptPaths = (page: Page) =>
+  page.evaluate(async () => {
     const names = await caches.keys()
     const all = await Promise.all(
       names.map(async (n) =>
         (await (await caches.open(n)).keys()).map((r) => new URL(r.url).pathname),
       ),
     )
-    return all.flat()
+    return all.flat().filter((p) => !p.startsWith('/_next/static/') && p !== '/offline.html')
   })
-  expect(kept.filter((p) => !p.startsWith('/_next/static/') && p !== '/offline.html')).toEqual([])
+
+test('a trip opened once can be read without connection, until sign-out', async ({
+  page,
+  context,
+}) => {
+  const { id } = await signIn(context, 'Ana')
+  const db = createDb(env.DATABASE_URL)
+  const tripId = await createTrip(db, id, {
+    title: 'BH sem sinal',
+    destination: 'Belo Horizonte',
+    startDate: '2027-03-04',
+    endDate: '2027-03-05',
+    timezone: 'America/Sao_Paulo',
+  })
+  await db.$client.end()
+  await page.goto(`/en/trips/${tripId}`)
+  await page.evaluate(() => navigator.serviceWorker.ready)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'BH sem sinal' })).toBeVisible()
+  await page.goto('/en/account')
+  // Only the trip itself is kept: not the account, the list of trips or anything else.
+  expect(await keptPaths(page)).toEqual([`/en/trips/${tripId}`])
+
+  await context.setOffline(true)
+  await page.goto(`/en/trips/${tripId}`)
+  await expect(page.getByRole('heading', { name: 'BH sem sinal' })).toBeVisible()
+  await page.goto('/en/trips')
+  await expect(page.getByText('No connection')).toBeVisible()
+  await page.getByRole('link', { name: 'BH sem sinal' }).click()
+  await expect(page.getByRole('heading', { name: 'BH sem sinal' })).toBeVisible()
+
+  await context.setOffline(false)
+  await page.goto('/en/trips')
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await expect(page).toHaveURL(/\/en$/)
+  expect(await keptPaths(page)).toEqual([])
+})
+
+test('a trip that cannot be opened any more is not kept', async ({ page, context }) => {
+  const { id } = await signIn(context, 'Ana')
+  const db = createDb(env.DATABASE_URL)
+  const tripId = await createTrip(db, id, {
+    title: 'Some',
+    destination: 'Belo Horizonte',
+    startDate: '2027-03-04',
+    endDate: '2027-03-05',
+    timezone: 'America/Sao_Paulo',
+  })
+  await page.goto(`/en/trips/${tripId}`)
+  await page.evaluate(() => navigator.serviceWorker.ready)
+  await page.reload()
+  await expect.poll(() => keptPaths(page)).toEqual([`/en/trips/${tripId}`])
+  await db.delete(trips).where(eq(trips.id, tripId))
+  await db.$client.end()
+  await page.reload()
+  expect(await keptPaths(page)).toEqual([])
 })

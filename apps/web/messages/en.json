@@ -32,7 +32,7 @@
     "past": "Past",
     "archived": "Archived",
     "emptyTitle": "No trips yet",
-    "emptyBody": "Create the first one and start adding stops.",
+    "emptyBody": "Create your first trip and bring the group in to plan it together.",
     "signOut": "Sign out"
   },
   "LocaleSwitcher": {
@@ -90,7 +90,7 @@
     "errors": {
       "title": "Give the trip a name.",
       "destination": "Say where the trip goes.",
-      "dates": "The last day must come after the first, up to 90 days.",
+      "dates": "The last day must come after the first, and a trip can be up to 90 days.",
       "timezone": "Choose a timezone from the list."
     }
   },
@@ -183,7 +183,12 @@
     "paid": "{title} marked as paid",
     "allTrips": "Trips",
     "newItemPlaceholder": "Search a place or write what to do",
-    "newItemHint": "Then tap the stop to add a time, a kind and notes."
+    "newItemHint": "Then tap the stop to add a time, a kind and notes.",
+    "start": {
+      "title": "Where to start",
+      "stops": "Add where you will stay and what you want to see. What has no day yet can wait in Ideas.",
+      "people": "Bring the group in to plan it together."
+    }
   },
   "Map": {
     "label": "Trip map",
@@ -240,7 +245,11 @@
       "viewer": "View only, no account needed"
     },
     "linkEdit": "Copy it now: it is not shown again. It works for 14 days.",
-    "linkView": "Whoever has it sees the itinerary, the map and the notes, without an account. Nobody's name is shown. Copy it now: it is not shown again."
+    "linkView": "Whoever has it sees the itinerary, the map and the notes, without an account. Nobody's name is shown. Copy it now: it is not shown again.",
+    "whatsapp": "Send on WhatsApp",
+    "share": "Send another way",
+    "shareEdit": "Come plan {title} with me on TripForge: {link}",
+    "shareView": "You can follow {title} here, no account needed: {link}"
   },
   "Invite": {
     "as": {
@@ -262,7 +271,7 @@
     "forgotBody": "We will email you a link to choose a new one.",
     "email": "Email",
     "send": "Send the link",
-    "sent": "If there is an account with this email, the link is on its way.",
+    "sent": "If there is an account with this email, the link is on its way. Check the spam folder too.",
     "tooMany": "Too many attempts. Wait a minute and try again.",
     "failed": "Something went wrong. Please try again.",
     "resetTitle": "Choose a new password",
@@ -279,7 +288,7 @@
   },
   "History": {
     "title": "History",
-    "empty": "Nothing has changed yet.",
+    "empty": "Nothing has changed yet. When someone edits the trip, it shows up here.",
     "filter": "Day",
     "allDays": "All days",
     "ideas": "Ideas",
@@ -455,7 +464,7 @@
     },
     "cookies": {
       "title": "Cookies",
-      "body": "Two, both needed: one keeps you signed in, and the other remembers your language. What you change without a connection waits in your browser until it can be sent."
+      "body": "Two, both needed: one keeps you signed in, and the other remembers your language. What you change without a connection waits in your browser until it can be sent. The trips you open are kept on the device so you can read them offline, and are deleted when you sign out."
     },
     "others": {
       "title": "Other services",

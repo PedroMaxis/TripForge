@@ -2,7 +2,7 @@
 
 import type { Role, TripMember } from '@tripforge/core'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { formatDate } from '@/lib/dates'
 import {
   changeRoleAction,
@@ -17,12 +17,14 @@ const guestRoles: GuestRole[] = ['editor', 'viewer']
 
 export function PeopleManager({
   tripId,
+  tripTitle,
   isOwner,
   selfId,
   members,
   invites,
 }: {
   tripId: string
+  tripTitle: string
   isOwner: boolean
   selfId: string
   members: TripMember[]
@@ -37,6 +39,11 @@ export function PeopleManager({
   const [role, setRole] = useState<GuestRole>('editor')
   const [link, setLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  // Only known in the browser, and only some have it (most phones do).
+  const [canShare, setCanShare] = useState(false)
+  useEffect(() => setCanShare(typeof navigator.share === 'function'), [])
+  const message =
+    link && t(link.includes('/see/') ? 'shareView' : 'shareEdit', { title: tripTitle, link })
 
   function run(action: () => Promise<unknown>) {
     setFailed(false)
@@ -207,7 +214,26 @@ export function PeopleManager({
                   {copied ? t('copied') : t('copy')}
                 </button>
               </div>
-              <p className="mt-2 text-sm text-ink-2">
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(message ?? link)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  {t('whatsapp')}
+                </a>
+                {canShare && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => navigator.share({ text: message ?? link }).catch(() => {})}
+                  >
+                    {t('share')}
+                  </button>
+                )}
+              </div>
+              <p className="mt-3 text-sm text-ink-2">
                 {t(link.includes('/see/') ? 'linkView' : 'linkEdit')}
               </p>
             </div>

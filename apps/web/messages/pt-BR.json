@@ -32,7 +32,7 @@
     "past": "Passadas",
     "archived": "Arquivadas",
     "emptyTitle": "Nenhuma viagem ainda",
-    "emptyBody": "Crie a primeira e comece a colocar paradas.",
+    "emptyBody": "Crie a primeira viagem e chame o pessoal pra planejar junto.",
     "signOut": "Sair"
   },
   "LocaleSwitcher": {
@@ -90,7 +90,7 @@
     "errors": {
       "title": "Dê um nome pra viagem.",
       "destination": "Diga pra onde é a viagem.",
-      "dates": "O último dia tem que vir depois do primeiro, até 90 dias.",
+      "dates": "O último dia tem que ser depois do primeiro, e a viagem pode ter até 90 dias.",
       "timezone": "Escolha um fuso da lista."
     }
   },
@@ -100,7 +100,7 @@
     "noDay": "Sem dia",
     "dayNumber": "Dia {number}",
     "stops": "{count, plural, =0 {Sem paradas} one {# parada} other {# paradas}}",
-    "kept": "{count, plural, =0 {Nenhuma} one {# guardada} other {# guardadas}}",
+    "kept": "{count, plural, =0 {Nenhuma ainda} one {# guardada} other {# guardadas}}",
     "ideasBody": "Guardadas até ganharem um dia",
     "addStop": "Adicionar parada",
     "addIdea": "Guardar ideia",
@@ -108,7 +108,7 @@
     "newIdea": "Nova ideia",
     "add": "Adicionar",
     "dayName": "Nome do dia",
-    "viewOnly": "Só leitura",
+    "viewOnly": "Só pode ver",
     "emptyDay": "Este dia está livre",
     "emptyDayBody": "Adicione uma parada ou arraste uma de outro dia.",
     "emptyDayViewer": "Nada planejado ainda.",
@@ -123,7 +123,7 @@
     "place": "Lugar",
     "address": "Endereço",
     "notes": "Notas",
-    "moveTo": "Mover para",
+    "moveTo": "Mover pra",
     "delete": "Excluir parada",
     "undo": "Desfazer",
     "moved": "{title} mudou de lugar",
@@ -183,7 +183,12 @@
     "paid": "{title} marcado como pago",
     "allTrips": "Viagens",
     "newItemPlaceholder": "Busque um lugar ou escreva o que fazer",
-    "newItemHint": "Depois, toque na parada pra pôr horário, tipo e anotações."
+    "newItemHint": "Depois, toque na parada pra pôr horário, tipo e notas.",
+    "start": {
+      "title": "Por onde começar",
+      "stops": "Adicione onde vocês vão ficar e o que querem ver. Pode deixar o que ainda não tem dia em Ideias.",
+      "people": "Chame o pessoal pra planejar junto."
+    }
   },
   "Map": {
     "label": "Mapa da viagem",
@@ -215,7 +220,7 @@
     "roles": {
       "owner": "Criou a viagem",
       "editor": "Pode editar",
-      "viewer": "Só leitura"
+      "viewer": "Só pode ver"
     },
     "roleOf": "Papel de {name}",
     "remove": "Remover",
@@ -227,20 +232,24 @@
     "leaveConfirm": "Pra voltar, você vai precisar de um novo convite.",
     "leaveYes": "Sim, sair",
     "invite": "Convidar",
-    "inviteRole": "Quem tiver o link",
-    "create": "Criar link",
+    "inviteRole": "Que convite você quer mandar?",
+    "create": "Gerar convite",
     "link": "Link do convite",
     "copy": "Copiar",
     "copied": "Copiado",
     "expires": "Vale até {date}",
-    "revoke": "Revogar link",
+    "revoke": "Desativar link",
     "failed": "Não deu certo. Tente de novo.",
     "links": {
-      "editor": "Pode editar, com conta",
-      "viewer": "Só ver, sem precisar de conta"
+      "editor": "Pra planejar junto (a pessoa cria uma conta)",
+      "viewer": "Só pra acompanhar (sem conta)"
     },
-    "linkEdit": "Copie agora: ele não aparece de novo. Vale por 14 dias.",
-    "linkView": "Quem tiver o link vê o roteiro, o mapa e as notas, sem conta. O nome de ninguém aparece. Copie agora: ele não aparece de novo."
+    "linkEdit": "Copie e mande agora: o link só aparece esta vez. Vale por 14 dias.",
+    "linkView": "Quem tiver o link vê o roteiro, o mapa e as notas, sem conta. O nome de ninguém aparece. Copie e mande agora: o link só aparece esta vez.",
+    "whatsapp": "Mandar pelo WhatsApp",
+    "share": "Mandar de outro jeito",
+    "shareEdit": "Te chamei pra planejar a viagem {title} comigo no TripForge: {link}",
+    "shareView": "Dá pra acompanhar a viagem {title} por aqui, sem precisar criar conta: {link}"
   },
   "Invite": {
     "as": {
@@ -250,7 +259,7 @@
     "join": "Entrar na viagem",
     "signInFirst": "Entre na sua conta pra participar, ou crie uma.",
     "gone": {
-      "revoked": "Este convite foi revogado.",
+      "revoked": "Este convite foi desativado.",
       "expired": "Este convite expirou.",
       "ask": "Peça um novo link pra quem te enviou."
     },
@@ -262,7 +271,7 @@
     "forgotBody": "Vamos te enviar um link pra escolher uma nova.",
     "email": "E-mail",
     "send": "Enviar o link",
-    "sent": "Se existir uma conta com este e-mail, o link está a caminho.",
+    "sent": "Se existir uma conta com este e-mail, o link está a caminho. Olhe também a caixa de spam.",
     "tooMany": "Muitas tentativas. Espere um minuto e tente de novo.",
     "failed": "Algo deu errado. Tente de novo.",
     "resetTitle": "Escolha uma nova senha",
@@ -279,7 +288,7 @@
   },
   "History": {
     "title": "Histórico",
-    "empty": "Nada mudou ainda.",
+    "empty": "Nada mudou ainda. Quando alguém mexer na viagem, aparece aqui.",
     "filter": "Dia",
     "allDays": "Todos os dias",
     "ideas": "Ideias",
@@ -288,7 +297,7 @@
     "entries": {
       "item_create": "{name} adicionou {title}",
       "item_update": "{name} editou {title}",
-      "item_move": "{name} moveu {title} para {day}",
+      "item_move": "{name} moveu {title} pra {day}",
       "item_delete": "{name} excluiu {title}",
       "item_restore": "{name} trouxe de volta {title}",
       "day_update": "{name} editou {day}",
@@ -455,7 +464,7 @@
     },
     "cookies": {
       "title": "Cookies",
-      "body": "Dois, ambos necessários: um mantém sua conta aberta e o outro lembra o idioma. O que você muda sem conexão espera no seu navegador até poder ser enviado."
+      "body": "Dois, ambos necessários: um mantém sua conta aberta e o outro lembra o idioma. O que você muda sem conexão espera no seu navegador até poder ser enviado. As viagens que você abre ficam guardadas no aparelho pra dar pra ver sem internet, e são apagadas quando você sai da conta."
     },
     "others": {
       "title": "Outros serviços",
@@ -467,7 +476,7 @@
     },
     "choices": {
       "title": "Suas escolhas",
-      "body": "Na sua conta dá pra mudar o nome, baixar seus dados e excluir tudo. Os links podem ser revogados a qualquer momento na página de pessoas da viagem."
+      "body": "Na sua conta dá pra mudar o nome, baixar seus dados e excluir tudo. Os links podem ser desativados a qualquer momento na página de pessoas da viagem."
     },
     "contact": {
       "title": "Dúvidas",
