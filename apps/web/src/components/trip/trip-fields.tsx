@@ -1,7 +1,7 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-import { useEffect, useId, useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { TripFormError } from '@/lib/trips'
 import { PlaceSearch } from '../place-search'
 
@@ -25,7 +25,12 @@ export function TripFields({
   onDates?: (startDate: string, endDate: string) => void
 }) {
   const t = useTranslations('TripForm')
+  const locale = useLocale()
   const id = useId()
+  const zoneList = useRef<HTMLSelectElement>(null)
+  // Most people never need to see the list: the destination sets the clock.
+  const [choosing, setChoosing] = useState(error === 'timezone')
+  const [ready, setReady] = useState(false)
   const [dates, setDates] = useState({
     startDate: values?.startDate ?? '',
     endDate: values?.endDate ?? '',
@@ -45,7 +50,11 @@ export function TripFields({
       [...new Set([own, ...current, ...Intl.supportedValuesOf('timeZone')])].sort(),
     )
     setZone((current) => current || own)
+    setReady(true)
   }, [])
+  useEffect(() => {
+    if (choosing) zoneList.current?.focus()
+  }, [choosing])
 
   function changeDates(next: Partial<typeof dates>) {
     const changed = { ...dates, ...next }
@@ -118,29 +127,69 @@ export function TripFields({
         {date('startDate')}
         {date('endDate')}
       </div>
-      <div>
-        <label htmlFor={`${id}-zone`} className="font-medium">
-          {t('timezone')}
-        </label>
-        <select
-          id={`${id}-zone`}
-          name="timezone"
-          value={zone}
-          onChange={(e) => setZone(e.target.value)}
-          aria-describedby={`${id}-zone-hint`}
-          className="field mt-1"
-        >
-          {zones.map((z) => (
-            <option key={z}>{z}</option>
-          ))}
-        </select>
-        <p id={`${id}-zone-hint`} className="mt-1 text-sm text-muted">
-          {t('timezoneHint')}
+      {choosing ? (
+        <div>
+          <label htmlFor={`${id}-zone`} className="font-medium">
+            {t('timezone')}
+          </label>
+          <select
+            ref={zoneList}
+            id={`${id}-zone`}
+            name="timezone"
+            value={zone}
+            onChange={(e) => setZone(e.target.value)}
+            aria-describedby={`${id}-zone-hint`}
+            className="field mt-1"
+          >
+            {zones.map((z) => (
+              <option key={z} value={z}>
+                {zoneLabel(z, locale)}
+              </option>
+            ))}
+          </select>
+          <p id={`${id}-zone-hint`} className="mt-1 text-sm text-muted">
+            {t('timezoneHint')}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted">
+          <input type="hidden" name="timezone" value={zone} />
+          {ready && zone && (
+            <>
+              {t('clock', { zone: zoneName(zone, locale) })}{' '}
+              <button
+                type="button"
+                onClick={() => setChoosing(true)}
+                className="font-medium text-ink underline underline-offset-4"
+              >
+                {t('changeClock')}
+              </button>
+            </>
+          )}
         </p>
-      </div>
+      )}
       <p role="alert" className="text-danger empty:hidden">
         {error && t(`errors.${error}`)}
       </p>
     </>
   )
+}
+
+/** "Horário Padrão de Brasília" rather than "America/Sao_Paulo". */
+export function zoneName(zone: string, locale: string) {
+  try {
+    const parts = new Intl.DateTimeFormat(locale, {
+      timeZone: zone,
+      timeZoneName: 'longGeneric',
+    }).formatToParts(new Date())
+    return parts.find((p) => p.type === 'timeZoneName')?.value ?? zone
+  } catch {
+    return zone
+  }
+}
+
+function zoneLabel(zone: string, locale: string) {
+  const city = zone.split('/').at(-1)?.replaceAll('_', ' ') ?? zone
+  const name = zoneName(zone, locale)
+  return name === city ? city : `${city} · ${name}`
 }

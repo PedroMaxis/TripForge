@@ -74,6 +74,8 @@
     "endDate": "Last day",
     "timezone": "Timezone",
     "timezoneHint": "Times in the itinerary follow this clock.",
+    "clock": "Trip clock: {zone}.",
+    "changeClock": "Change",
     "create": "Create trip",
     "save": "Save changes",
     "cancel": "Cancel",
@@ -183,7 +185,10 @@
     "money": "Expenses",
     "lists": "Lists",
     "group": "Group",
-    "paid": "{title} marked as paid"
+    "paid": "{title} marked as paid",
+    "allTrips": "Trips",
+    "newItemPlaceholder": "Search a place or write what to do",
+    "newItemHint": "Then tap the stop to add a time, a kind and notes."
   },
   "Map": {
     "label": "Trip map",
@@ -191,7 +196,9 @@
     "failed": "The map did not load. The itinerary still works.",
     "retry": "Try again",
     "all": "See all days",
-    "back": "Back to the day"
+    "back": "Back to the day",
+    "terrainCredit": "Relief: Mapzen, NASA SRTM",
+    "routeCredit": "Routes: OSRM, FOSSGIS"
   },
   "People": {
     "title": "People",

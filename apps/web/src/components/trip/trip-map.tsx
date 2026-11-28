@@ -22,12 +22,16 @@ type Props = MapSources & {
 type Loaded = { map: MapLibre; lib: typeof import('maplibre-gl'); colors: MapColors }
 
 const routeSource = 'routes'
-const terrainCredit = 'Relief: Mapzen, NASA SRTM'
-const routeCredit = 'Routes: OSRM, FOSSGIS'
 
 const duration = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 700)
 
-async function load(container: HTMLElement, { styleUrl, terrainUrl }: MapSources): Promise<Loaded> {
+type Credits = { terrain: string; routes: string }
+
+async function load(
+  container: HTMLElement,
+  { styleUrl, terrainUrl }: MapSources,
+  credits: Credits,
+): Promise<Loaded> {
   const [lib, { default: contour }, res] = await Promise.all([
     import('maplibre-gl'),
     import('maplibre-contour'),
@@ -71,7 +75,7 @@ async function load(container: HTMLElement, { styleUrl, terrainUrl }: MapSources
     ],
     minzoom: 11,
     maxzoom: 15,
-    attribution: terrainCredit,
+    attribution: credits.terrain,
   })
   map.addLayer(
     {
@@ -90,7 +94,7 @@ async function load(container: HTMLElement, { styleUrl, terrainUrl }: MapSources
   map.addSource(routeSource, {
     type: 'geojson',
     data: { type: 'FeatureCollection', features: [] },
-    attribution: routeCredit,
+    attribution: credits.routes,
   })
   map.addLayer({
     id: routeSource,
@@ -119,13 +123,20 @@ export function TripMap(props: Props) {
     pick.current = onPick
   })
 
+  const terrainCredit = t('terrainCredit')
+  const routeCredit = t('routeCredit')
+
   // attempt is here to ask for another try
   useEffect(() => {
     if (!container.current) return
     let gone = false
     let map: MapLibre | undefined
     setFailed(false)
-    load(container.current, { styleUrl, terrainUrl })
+    load(
+      container.current,
+      { styleUrl, terrainUrl },
+      { terrain: terrainCredit, routes: routeCredit },
+    )
       .then((result) => {
         map = result.map
         if (gone) map.remove()
@@ -139,7 +150,7 @@ export function TripMap(props: Props) {
       map?.remove()
       setLoaded(null)
     }
-  }, [styleUrl, terrainUrl, attempt])
+  }, [styleUrl, terrainUrl, terrainCredit, routeCredit, attempt])
 
   const days = trip.days.map((day) => ({
     id: day.id as string | null,

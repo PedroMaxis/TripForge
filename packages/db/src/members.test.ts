@@ -264,8 +264,9 @@ describe('how long a link lasts', () => {
     const end = shiftDate(new Date().toISOString().slice(0, 10), 100)
     await t.db.update(trips).set({ startDate: end, endDate: end }).where(eq(trips.id, tripId))
     const left = await daysLeft((await invite('viewer')).id)
-    expect(left).toBeGreaterThanOrEqual(130)
-    expect(left).toBeLessThanOrEqual(131)
+    // From now to the midnight the trip ends on, then 30 days: 129 to 130, by the time of day.
+    expect(left).toBeGreaterThanOrEqual(129)
+    expect(left).toBeLessThanOrEqual(130)
   })
   test('a view link of a past trip, still two weeks', async () => {
     await t.db

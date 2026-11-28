@@ -216,7 +216,25 @@ export function TripScreen({
         }`}
       >
         <header className="col-span-full flex items-center gap-3 px-4 py-2 md:gap-6 md:px-6">
-          <Logo compact />
+          <span className="max-md:hidden">
+            <Logo />
+          </span>
+          <Link
+            href="/trips"
+            className="-ml-2 flex min-h-11 items-center gap-1 rounded-full px-2 font-medium hover:bg-mist md:hidden"
+          >
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <path
+                d="M10 3 5 8l5 5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {t('allTrips')}
+          </Link>
           <SyncStatus sync={sync} quiet={!canEdit} />
           <div className="ml-auto flex items-center gap-3">
             {!canEdit && (
@@ -346,6 +364,8 @@ export function TripScreen({
                   key={dayId}
                   button={day ? t('addStop') : t('addIdea')}
                   label={day ? t('newStop') : t('newIdea')}
+                  placeholder={t('newItemPlaceholder')}
+                  hint={t('newItemHint')}
                   near={near}
                   onAdd={(title, place?: Place) =>
                     dispatch({

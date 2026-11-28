@@ -2,23 +2,28 @@
 
 import type { Place } from '@tripforge/core'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { type Near, PlaceSearch } from '../place-search'
 
 export function AddItem({
   button,
   label,
+  placeholder,
+  hint,
   near,
   onAdd,
 }: {
   button: string
   label: string
+  placeholder: string
+  hint: string
   near: Near
   onAdd: (title: string, place?: Place) => void
 }) {
   const t = useTranslations('Trip')
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
+  const hintId = useId()
 
   if (!open) {
     return (
@@ -29,7 +34,7 @@ export function AddItem({
   }
   return (
     <form
-      className="flex min-w-0 flex-1 basis-72 gap-2"
+      className="flex min-w-0 flex-1 basis-72 flex-wrap gap-2"
       onSubmit={(event) => {
         event.preventDefault()
         if (!title.trim()) return
@@ -45,7 +50,8 @@ export function AddItem({
       <PlaceSearch
         autoFocus
         aria-label={label}
-        placeholder={label}
+        aria-describedby={hintId}
+        placeholder={placeholder}
         value={title}
         near={near}
         maxLength={200}
@@ -59,6 +65,9 @@ export function AddItem({
       <button type="submit" className="btn btn-primary">
         {t('add')}
       </button>
+      <p id={hintId} className="basis-full px-1 text-sm text-muted">
+        {hint}
+      </p>
     </form>
   )
 }

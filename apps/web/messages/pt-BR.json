@@ -74,6 +74,8 @@
     "endDate": "Último dia",
     "timezone": "Fuso horário",
     "timezoneHint": "Os horários do roteiro seguem este relógio.",
+    "clock": "Relógio da viagem: {zone}.",
+    "changeClock": "Mudar",
     "create": "Criar viagem",
     "save": "Salvar mudanças",
     "cancel": "Cancelar",
@@ -183,7 +185,10 @@
     "money": "Gastos",
     "lists": "Listas",
     "group": "Grupo",
-    "paid": "{title} marcado como pago"
+    "paid": "{title} marcado como pago",
+    "allTrips": "Viagens",
+    "newItemPlaceholder": "Busque um lugar ou escreva o que fazer",
+    "newItemHint": "Depois, toque na parada pra pôr horário, tipo e anotações."
   },
   "Map": {
     "label": "Mapa da viagem",
@@ -191,7 +196,9 @@
     "failed": "O mapa não abriu. O roteiro continua funcionando.",
     "retry": "Tentar de novo",
     "all": "Ver todos os dias",
-    "back": "Voltar ao dia"
+    "back": "Voltar ao dia",
+    "terrainCredit": "Relevo: Mapzen, NASA SRTM",
+    "routeCredit": "Rotas: OSRM, FOSSGIS"
   },
   "People": {
     "title": "Pessoas",

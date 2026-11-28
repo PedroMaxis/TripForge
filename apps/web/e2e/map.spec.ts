@@ -181,6 +181,8 @@ test('choosing the destination sets the clock and draws the cover', async ({ pag
   await page.getByLabel('Trip name').fill('BH')
   await page.getByLabel('Destination').fill('belo')
   await page.getByRole('option', { name: /Belo Horizonte/ }).click()
+  await expect(page.getByText('Trip clock: Brasilia Standard Time.')).toBeVisible()
+  await page.getByRole('button', { name: 'Change' }).click()
   await expect(page.getByLabel('Timezone')).toHaveValue('America/Sao_Paulo')
   await page.getByLabel('First day').fill('2027-03-04')
   await page.getByLabel('Last day').fill('2027-03-05')
